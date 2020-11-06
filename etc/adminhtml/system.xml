@@ -13,6 +13,11 @@
             <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>General</label>
 
+                <field id="last_update" translate="label" type="label" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Installed Version</label>
+                    <frontend_model>Swarming\SubscribePro\Block\Adminhtml\System\Config\InstalledVersion</frontend_model>
+                </field>
+
                 <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -180,9 +185,8 @@
                 </field>
 
                 <field id="custom_json_hosted_my_subscriptions" translate="label comment" type="textarea" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Hosted My Subscriptions Page Custom JSON Configuration</label>
-                    <comment>Enter custom JSON configuration, provided by Subscribe Pro Support, to set the style and functionality of the Hosted My Subscriptions page.</comment>
-                    <backend_model>Swarming\SubscribePro\Model\Config\Backend\ValidJson</backend_model>
+                    <label>Hosted My Subscriptions Page Configuration</label>
+                    <comment>Enter custom Javascript object containing configuration, provided by Subscribe Pro Support, to set the style and functionality of the Hosted My Subscriptions page.</comment>
                     <depends>
                         <field id="swarming_subscribepro/advanced/enable_hosted_my_subscriptions">1</field>
                     </depends>
