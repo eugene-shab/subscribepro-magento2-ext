@@ -55,20 +55,23 @@ define(
                 el.title = $t("Pay with Apple Pay");
                 el.alt = $t("Pay with Apple Pay");
                 el.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    console.log(context);
+
                     let applePaySession = new ApplePaySession(1, context.getPaymentRequest());
                     applePaySession.onvalidatemerchant = function (event) {
                         jQuery.ajax({
-                            url: window.spApplePayConfig.createSessionUrl,
+                            url: context.createSessionUrl,
                             type: "POST",
                             dataType: "json",
                             contentType: "application/json; charset=utf-8",
                             crossDomain: true,
                             headers: {
-                                'Authorization': 'Bearer ' + window.spApplePayConfig.accessToken
+                                'Authorization': 'Bearer ' + context.clientToken.access_token // sp access token
                             },
                             data: JSON.stringify({
                                 url: event.validationURL,
-                                merchantDomainName: window.spApplePayConfig.merchantDomainName
+                                merchantDomainName: context.merchantDomainName
                             }),
                             success: function (data, textStatus, jqXHR) {
                                 applePaySession.completeMerchantValidation(data);
@@ -81,70 +84,17 @@ define(
                     };
 
                     applePaySession.onshippingcontactselected = function (event) {
-                        jQuery.ajax({
-                            url: window.spApplePayConfig.onShippingContactSelectedUrl,
-                            type: "POST",
-                            dataType: "json",
-                            contentType: "application/json; charset=utf-8",
-                            data: JSON.stringify({
-                                shippingContact: event.shippingContact
-                            }),
-                            success: function (data, textStatus, jqXHR) {
-                                applePaySession.completeShippingContactSelection(
-                                    ApplePaySession.STATUS_SUCCESS,
-                                    data.newShippingMethods,
-                                    self.replaceTotalLabel(data.newTotal, window.spApplePayConfig.merchantDisplayName),
-                                    data.newLineItems);
-                            },
-                            error: function (jqXHR, textStatus, errorThrown) {
-                                console.error('Apple Pay Error: ' + errorThrown);
-                                applePaySession.abort();
-                            }
-                        });
+                        return context.onShippingContactSelect(event, applePaySession);
                     };
 
                     applePaySession.onshippingmethodselected = function (event) {
-                        jQuery.ajax({
-                            url: window.spApplePayConfig.onShippingMethodSelectedUrl,
-                            type: "POST",
-                            dataType: "json",
-                            contentType: "application/json; charset=utf-8",
-                            data: JSON.stringify({
-                                shippingMethod: event.shippingMethod
-                            }),
-                            success: function (data, textStatus, jqXHR) {
-                                session.completeShippingMethodSelection(
-                                    ApplePaySession.STATUS_SUCCESS,
-                                    self.replaceTotalLabel(data.newTotal, self.displayName),
-                                    data.newLineItems);
-                            },
-                            error: function (jqXHR, textStatus, errorThrown) {
-                                console.error('Apple Pay Error: ' + errorThrown);
-                                applePaySession.abort();
-                            }
-                        });
+                        return context.onShippingMethodSelect(event, applePaySession);
                     };
 
                     applePaySession.onpaymentauthorized = function (event) {
-                        jQuery.ajax({
-                            url: window.spApplePayConfig.onPaymentAuthorizedUrl,
-                            type: "POST",
-                            dataType: "json",
-                            contentType: "application/json; charset=utf-8",
-                            data: JSON.stringify({
-                                payment: event.payment
-                            }),
-                            success: function (data, textStatus, jqXHR) {
-                                // Complete payment
-                                session.completePayment(ApplePaySession.STATUS_SUCCESS);
-                                // Redirect to success page
-                                window.location.href = data.redirectUrl;
-                            },
-                            error: function (jqXHR, textStatus, errorThrown) {
-                                console.error('Apple Pay Error: ' + errorThrown);
-                                applePaySession.abort();
-                            }
-                        });
+                        console.log(event);
+
+                        applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
                     };
 
                     applePaySession.begin();

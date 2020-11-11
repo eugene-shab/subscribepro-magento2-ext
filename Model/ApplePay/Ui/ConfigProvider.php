@@ -87,10 +87,10 @@ class ConfigProvider implements ConfigProviderInterface
             return $this->clientToken;
         }
 
-        $this->clientToken = $this->oauthTool->getWidgetAccessTokenByCustomerId($this->getPlatformCustomerId());
+        return $this->clientToken = $this->oauthTool->getWidgetAccessTokenByCustomerId($this->getPlatformCustomerId());
     }
 
-    public function getMerchantDomainname(): string
+    public function getMerchantDomainName(): string
     {
         return $this->config->getMerchantDomainName();
     }
@@ -112,6 +112,7 @@ class ConfigProvider implements ConfigProviderInterface
     public function getPaymentMarkSrc()
     {
         //return 'test';
+        // @TODO replace with apple pay image
         return $this->assetRepo->getUrl('PayPal_Braintree::images/applepaymark.png');
     }
 

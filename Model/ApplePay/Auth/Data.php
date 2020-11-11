@@ -32,6 +32,11 @@ class Data implements ApplePayAuthDataInterface
     private $storeCode;
 
     /**
+     * @var string $merchantDomainName
+     */
+    private $merchantDomainName;
+
+    /**
      * @inheritdoc
      */
     public function getClientToken()
@@ -45,6 +50,14 @@ class Data implements ApplePayAuthDataInterface
     public function getDisplayName(): string
     {
         return $this->displayName;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMerchantDomainName(): string
+    {
+        return $this->merchantDomainName;
     }
 
     /**
@@ -85,6 +98,14 @@ class Data implements ApplePayAuthDataInterface
     public function setDisplayName($value)
     {
         $this->displayName = $value;
+    }
+
+    /**
+     * @inheridoc
+     */
+    public function setMerchantDomainName($value)
+    {
+        $this->merchantDomainName = $value;
     }
 
     /**

@@ -23,6 +23,13 @@ interface ApplePayAuthDataInterface
     public function getDisplayName(): string;
 
     /**
+     * Merchant display name
+     *
+     * @return string
+     */
+    public function getMerchantDomainName(): string;
+
+    /**
      * URL To success page
      *
      * @return string
@@ -56,6 +63,14 @@ interface ApplePayAuthDataInterface
      * @return string|null
      */
     public function setDisplayName($value);
+
+    /**
+     * Set Merchant Domain name
+     *
+     * @param string $value
+     * @return string|null
+     */
+    public function setMerchantDomainName($value);
 
     /**
      * Set URL To success page

@@ -3,6 +3,7 @@
 namespace Swarming\SubscribePro\Block\ApplePay\Shortcut;
 
 use Swarming\SubscribePro\Block\ApplePay\AbstractButton;
+use Swarming\SubscribePro\Model\Config\Platform as PlatformConfig;
 use Swarming\SubscribePro\Model\ApplePay\Auth;
 use Magento\Checkout\Model\Session;
 use Magento\Catalog\Block\ShortcutInterface;
@@ -25,12 +26,18 @@ class Button extends AbstractButton implements ShortcutInterface
     private $defaultConfigProvider;
 
     /**
+     * @var PlatformConfig
+     */
+    protected $platformConfig;
+
+    /**
      * Button constructor
      *
      * @param Context $context
      * @param Session $checkoutSession
      * @param MethodInterface $payment
      * @param Auth $auth
+     * @param PlatformConfig $platformConfig
      * @param DefaultConfigProvider $defaultConfigProvider
      * @param array $data
      * @throws InputException
@@ -41,10 +48,11 @@ class Button extends AbstractButton implements ShortcutInterface
         Session $checkoutSession,
         MethodInterface $payment,
         Auth $auth,
+        PlatformConfig $platformConfig,
         DefaultConfigProvider $defaultConfigProvider,
         array $data = []
     ) {
-        parent::__construct($context, $checkoutSession, $payment, $auth, $data);
+        parent::__construct($context, $checkoutSession, $payment, $auth, $platformConfig, $data);
         $this->defaultConfigProvider = $defaultConfigProvider;
     }
 

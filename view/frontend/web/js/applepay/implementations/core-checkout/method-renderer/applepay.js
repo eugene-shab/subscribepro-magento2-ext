@@ -26,6 +26,7 @@ define([
         getApplePayBtn: function (id) {
             console.log('getting apple pay button');
             console.log(id);
+            console.log('getApplePayBtn method this', this);
             button.init(
                 document.getElementById(id),
                 this

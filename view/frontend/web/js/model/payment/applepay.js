@@ -44,6 +44,7 @@ define(
                 }
             },
 
+            // @TODO - DRY consolidation with button.js
             onApplePayButtonClicked: function() {
 
                 console.log('Apple Pay clicked');

@@ -79,6 +79,16 @@ define(
             },
 
             /**
+             * Set & get Apple Pay create session URL
+             */
+            setCreateSessionUrl: function(value) {
+                this.createSessionUrl = value;
+            },
+            getCreateSessionUrl: function () {
+                return this.createSessionUrl;
+            },
+
+            /**
              * Set and get quote id
              */
             setQuoteId: function (value) {
@@ -158,6 +168,13 @@ define(
                         label: this.getDisplayName(),
                         amount: this.getGrandTotalAmount()
                     },
+
+                    // @TODO make countryCode and currencyCode and supportedNetworks dynamic
+                    countryCode: 'US', // Merchant country code, not customer address country
+                    currencyCode: 'USD', // store currency
+                    supportedNetworks: ['masterCard', 'visa'], // allowed card types. need to hook up to payment config
+
+                    merchantCapabilities: ['supports3DS'],
                     requiredShippingContactFields: ['postalAddress', 'name', 'email', 'phone'],
                     requiredBillingContactFields: ['postalAddress', 'name']
                 };

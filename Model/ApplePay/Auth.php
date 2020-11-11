@@ -75,6 +75,7 @@ class Auth implements ApplePayAuthInterface
         $data->setActionSuccess($this->getActionSuccess());
         $data->setIsLoggedIn($this->isLoggedIn());
         $data->setStoreCode($this->getStoreCode());
+        $data->setMerchantDomainName($this->getMerchantDomainName());
 
         return $data;
     }
@@ -95,6 +96,11 @@ class Auth implements ApplePayAuthInterface
     protected function getDisplayName()
     {
         return $this->configProvider->getMerchantName();
+    }
+
+    protected function getMerchantDomainName()
+    {
+        return $this->configProvider->getMerchantDomainName();
     }
 
     /**

@@ -48,8 +48,9 @@ define(
                 api.setActionSuccess(this.actionSuccess);
                 api.setIsLoggedIn(this.isLoggedIn);
                 api.setStoreCode(this.storeCode);
+                api.setCreateSessionUrl(this.createSessionUrl);
 
-                console.log('shortcut button init');
+                console.log('shortcut button init', api);
                 // Attach the button
                 button.init(
                     document.getElementById(this.id),

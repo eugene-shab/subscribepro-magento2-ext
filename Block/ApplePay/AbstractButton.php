@@ -2,13 +2,14 @@
 
 namespace Swarming\SubscribePro\Block\ApplePay;
 
-use Swarming\SubscribePro\Model\ApplePay\Auth;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Payment\Model\MethodInterface;
+use Swarming\SubscribePro\Model\ApplePay\Auth;
+use Swarming\SubscribePro\Model\Config\Platform as PlatformConfig;
 
 abstract class AbstractButton extends Template
 {
@@ -28,11 +29,17 @@ abstract class AbstractButton extends Template
     protected $auth;
 
     /**
+     * @var PlatformConfig
+     */
+    protected $platformConfig;
+
+    /**
      * Button constructor.
      * @param Context $context
      * @param Session $checkoutSession
      * @param MethodInterface $payment
      * @param Auth $auth
+     * @param PlatformConfig $platformConfig
      * @param array $data
      * @throws InputException
      * @throws NoSuchEntityException
@@ -42,12 +49,14 @@ abstract class AbstractButton extends Template
         Session $checkoutSession,
         MethodInterface $payment,
         Auth $auth,
+        PlatformConfig $platformConfig,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->checkoutSession = $checkoutSession;
         $this->payment = $payment;
         $this->auth = $auth->get();
+        $this->platformConfig = $platformConfig;
     }
 
     /**
@@ -78,6 +87,16 @@ abstract class AbstractButton extends Template
     public function getMerchantName(): string
     {
         return $this->auth->getDisplayName();
+    }
+
+    /**
+     * Merchant domain name
+     *
+     * @return string
+     */
+    public function getMerchantDomainName(): string
+    {
+        return $this->auth->getMerchantDomainName();
     }
 
     /**
@@ -131,10 +150,10 @@ abstract class AbstractButton extends Template
         return $this->auth->getStoreCode();
     }
 
-//    public function getCreateSessionUrl()
-//    {
-//        return rtrim($this->platformApiConfig->getBaseUrl(), '/') . '/services/v2/vault/applepay/create-session.json';
-//    }
+    public function getCreateSessionUrl()
+    {
+        return rtrim($this->platformConfig->getBaseUrl(), '/') . '/services/v2/vault/applepay/create-session.json';
+    }
 //
 //    public function getOnShippingContactSelectedUrl()
 //    {
