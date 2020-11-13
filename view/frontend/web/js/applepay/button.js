@@ -92,9 +92,7 @@ define(
                     };
 
                     applePaySession.onpaymentauthorized = function (event) {
-                        console.log(event);
-
-                        applePaySession.completePayment(ApplePaySession.STATUS_SUCCESS);
+                        return context.onPaymentAuthorized(event, applePaySession);
                     };
 
                     applePaySession.begin();

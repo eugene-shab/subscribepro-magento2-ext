@@ -7,6 +7,7 @@
     <preference for="Swarming\SubscribePro\Model\CatalogRule\InspectorInterface" type="Swarming\SubscribePro\Model\CatalogRule\Inspector" />
     <preference for="Magento\Sales\Block\Adminhtml\Order\Create\Items\Grid" type="Swarming\SubscribePro\Block\Adminhtml\Order\Create\Items\Grid" />
     <preference for="Swarming\SubscribePro\Api\CartManagementInterface" type="Swarming\SubscribePro\Model\Quote\QuoteManagement" />
+    <preference for="Swarming\SubscribePro\Api\ApplePayInterface" type="Swarming\SubscribePro\Model\ApplePay\ApplePay" />
     <preference for="Swarming\SubscribePro\Api\ApplePayAuthInterface" type="Swarming\SubscribePro\Model\ApplePay\Auth" />
     <preference for="Swarming\SubscribePro\Api\Data\ApplePayAuthDataInterface" type="Swarming\SubscribePro\Model\ApplePay\Auth\Data" />
 

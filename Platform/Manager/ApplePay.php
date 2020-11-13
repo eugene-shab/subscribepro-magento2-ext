@@ -34,11 +34,11 @@ class ApplePay
     /**
      * @param $spCustomerId
      * @param \Magento\Customer\Model\Customer|null $customer
-     * @param \Magento\Quote\Model\Quote\Address|null $billingAddress
+     * @param \Magento\Customer\Model\Address|null $billingAddress
      * @param array $applePayPaymentData
      * @return PaymentProfileInterface
      */
-    public function createApplePayProfile($spCustomerId, \Magento\Customer\Model\Customer $customer = null, \Magento\Quote\Model\Quote\Address $billingAddress = null, array $applePayPaymentData = [])
+    public function createApplePayProfile($spCustomerId, \Magento\Customer\Model\Customer $customer = null, \Magento\Customer\Model\Address $billingAddress = null, array $applePayPaymentData = [])
     {
         $paymentProfile = $this->platformPaymentProfileService->createApplePayProfile();
 
@@ -59,7 +59,7 @@ class ApplePay
         return $paymentProfile;
     }
 
-    public function createApplePayToken(\Magento\Quote\Model\Quote\Address $billingAddress = null, array $applePayPaymentData = [])
+    public function createApplePayToken(\Magento\Customer\Model\Address $billingAddress = null, array $applePayPaymentData = [])
     {
         $requestData = [
             'billing_address' => [

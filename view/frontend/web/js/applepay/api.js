@@ -89,6 +89,16 @@ define(
             },
 
             /**
+             * Set & get OnPaymentAuthorized URL
+             */
+            setOnPaymentAuthorizedUrl: function(value) {
+                this.onPaymentAuthorizedUrl = value;
+            },
+            getOnPaymentAuthorizedUrl: function () {
+                return this.onPaymentAuthorizedUrl;
+            },
+
+            /**
              * Set and get quote id
              */
             setQuoteId: function (value) {
@@ -330,6 +340,21 @@ define(
                 }.bind(this));
             },
 
+            onPaymentAuthorized: function (event, session) {
+                storage.post(
+                    this.getOnPaymentAuthorizedUrl(),
+                    JSON.stringify(event.payment)
+                ).done(function (response) {
+                    console.log('onpaymentauthorized response:');
+                    console.log(response)
+                    if (response.status != 200) {
+                        console.log(response.status, response.message);
+                        session.completePayment(ApplePaySession.STATUS_FAILURE);
+                    }
+                    this.startPlaceOrder(response.message, event, session);
+                }.bind(this));
+            },
+
             /**
              * Place the order
              */
@@ -387,9 +412,9 @@ define(
                             {
                                 "email": shippingContact.emailAddress,
                                 "paymentMethod": {
-                                    "method": "braintree_applepay",
+                                    "method": "subscribe_pro_applepay",
                                     "additional_data": {
-                                        "payment_method_nonce": nonce
+                                        "payment_profile_id": nonce
                                     }
                                 }
                             }

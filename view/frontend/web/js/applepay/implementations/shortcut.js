@@ -49,6 +49,8 @@ define(
                 api.setIsLoggedIn(this.isLoggedIn);
                 api.setStoreCode(this.storeCode);
                 api.setCreateSessionUrl(this.createSessionUrl);
+                api.setOnPaymentAuthorizedUrl(this.onPaymentAuthorizedUrl);
+                console.log('onpaymentauthorized url: ', this.onPaymentAuthorizedUrl);
 
                 console.log('shortcut button init', api);
                 // Attach the button

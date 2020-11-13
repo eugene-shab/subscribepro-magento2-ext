@@ -154,19 +154,9 @@ abstract class AbstractButton extends Template
     {
         return rtrim($this->platformConfig->getBaseUrl(), '/') . '/services/v2/vault/applepay/create-session.json';
     }
-//
-//    public function getOnShippingContactSelectedUrl()
-//    {
-//        return $this->getUrl('swarming_subscribepro/applepay/onshippingcontactselected');
-//    }
-//
-//    public function getOnShippingMethodSelectedUrl()
-//    {
-//        return $this->getUrl('swarming_subscribepro/applepay/onshippingmethodselected');
-//    }
-//
-//    public function getOnPaymentAuthorizedUrl()
-//    {
-//        return $this->getUrl('swarming_subscribepro/applepay/onpaymentauthorized');
-//    }
+
+    public function getOnPaymentAuthorizedUrl()
+    {
+        return 'rest/' . $this->auth->getStoreCode() . '/V1/swarming_subscribepro/applepay/onpaymentauthorized';
+    }
 }
