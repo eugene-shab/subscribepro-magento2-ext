@@ -217,7 +217,7 @@ class OrderService
 
     private function checkAndCreateSubscriptionAndUpdateQuoteItem($spCustomerId,  $order,  $quoteItem, $shippingAddress)
     {
-        $interval = '1111';
+        $interval = 'Test Interval - 3 days';
         $subscription = $this->createSubscriptionAndUpdateQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval);
 
         /** TODO VALIDATION **/
