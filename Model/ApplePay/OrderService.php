@@ -63,6 +63,7 @@ class OrderService
     private $logger;
     private $subscriptionCreator;
     private $customerHelper;
+    private $subscription;
 
     public function __construct(
         CartRepositoryInterface $quoteRepository,
@@ -76,7 +77,8 @@ class OrderService
         OrderSender $orderSender,
         LoggerInterface $logger,
         SubscriptionCreator $subscriptionCreator,
-        CustomerHelper $customerHelper
+        CustomerHelper $customerHelper,
+        \Swarming\SubscribePro\Platform\Service\Subscription $subscription
     ) {
         $this->quoteRepository = $quoteRepository;
         $this->quoteManagement = $quoteManagement;
@@ -90,6 +92,7 @@ class OrderService
         $this->logger = $logger;
         $this->subscriptionCreator = $subscriptionCreator;
         $this->customerHelper = $customerHelper;
+        $this->subscription = $subscription;
     }
 
     public function createOrder($quoteId): bool
@@ -199,10 +202,10 @@ class OrderService
 
         /** TODO relevant items **/
         $quoteItems = $quote->getAllVisibleItems();
-
+        $shippingAddress = $quote->getShippingAddress();
         // Iterate items
         foreach ($quoteItems as $quoteItemDetails) {
-            $subscription = $this->checkAndCreateSubscriptionAndUpdateQuoteItem($spCustomerId, $order, $quoteItemDetails['quoteItem'], $quoteItemDetails['shippingAddress']);
+            $subscription = $this->checkAndCreateSubscriptionAndUpdateQuoteItem($spCustomerId, $order, $quoteItemDetails, $shippingAddress);
             if ($subscription != null) {
                 $subscriptions[] = $subscription;
             }
@@ -251,10 +254,11 @@ class OrderService
     private function createSubscriptionAndUpdateQuoteItem($spCustomerId,  $order, $quoteItem, $shippingAddress, $interval)
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $subsciptionService = $objectManager->create('SubscribePro\Service\Subscription\SubscriptionService');
+//        $subsciptionService = $objectManager->create('SubscribePro\Service\Subscription\SubscriptionService');
 
         $subscription = $this->createSubscriptionFromQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval);
-        $subscription = $subsciptionService->createSubscription($subscription);
+        $this->subscription->saveSubscription($subscription);
+        //$subscription = $this->subscription->createSubscription($subscription);
         /** TODO update quote **/
 //        /** @var SubscribePro_Autoship_Helper_Platform_Subscription $subscriptionHelper */
 //        $subscriptionHelper = Mage::helper('autoship/platform_subscription');
@@ -308,25 +312,26 @@ class OrderService
 
     protected function createSubscriptionFromQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $subscriptionService = $objectManager->create('SubscribePro\Service\Subscription\SubscriptionService');
+        //$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        //$subscriptionService = $objectManager->create('SubscribePro\Service\Subscription\SubscriptionService');
 
-//        $subscriptionHelper = Mage::helper('autoship/platform_subscription');
-//
-//        $paymentHelper = Mage::helper('autoship/payment');
-//        // Get quote
-//        $quote = $quoteItem->getQuote();
-//        // Lookup which product is "relevant" to create subscription
-//        $product = $quoteItem->getProduct();
-//
-//        // Empty subscription object
-//        $subscription = $subsciptionService->initSubscription();
-//        // Customer
-//        $subscription->setCustomerId($spCustomerId);
-//        // Send notification
-//        $subscription->setSendCustomerNotificationEmail(true);
-//        // Payment
-//        $paymentMethodCode = $quote->getPayment()->getMethod();
+
+        //$subscriptionHelper = Mage::helper('autoship/platform_subscription');
+
+        //$paymentHelper = Mage::helper('autoship/payment');
+        // Get quote
+        $quote = $quoteItem->getQuote();
+        // Lookup which product is "relevant" to create subscription
+        $product = $quoteItem->getProduct();
+
+        // Empty subscription object
+        $subscription = $this->subscription->createSubscription();
+        // Customer
+        $subscription->setCustomerId($spCustomerId);
+        // Send notification
+        $subscription->setSendCustomerNotificationEmail(true);
+        // Payment
+        $paymentMethodCode = $quote->getPayment()->getMethod();
 //        if ($paymentHelper->isAnySubscribeProPayMethod($paymentMethodCode)) {
 //            $spPaymentProfileId = $order->getPayment()->getAdditionalInformation('payment_profile_id');
 //            if (!strlen($spPaymentProfileId)) {
@@ -335,22 +340,22 @@ class OrderService
 //            $subscription->setPaymentProfileId($spPaymentProfileId);
 //        }
 //        else {
-//            $subscription->setPaymentMethodCode($quote->getPayment()->getMethod());
-//        }
-//        // Product
-//        $subscription->setProductSku($product->getSku());
-//        $subscription->setQty($quoteItem->getQty());
-//        // Save coupon code on subscription, if config setting enabled
+            $subscription->setPaymentMethodCode($quote->getPayment()->getMethod());
+        //}
+        // Product
+        $subscription->setProductSku($product->getSku());
+        $subscription->setQty($quoteItem->getQty());
+        // Save coupon code on subscription, if config setting enabled
 //        if(Mage::getStoreConfig('autoship_subscription/options/allow_coupon', $quote->getStore()) == 1) {
 //            $subscription->setCouponCode($quote->getCouponCode());
 //        }
-//        $subscription->setUseFixedPrice(false);
-//        // Schedule
-//        $subscription->setFirstOrderAlreadyCreated(true);
-//        $subscription->setNextOrderDate(date('Y-m-d'));
-//        $subscription->setInterval($interval);
-//        // Magento specific
-//        $subscription->setMagentoStoreCode($quote->getStore()->getCode());
+        $subscription->setUseFixedPrice(false);
+        // Schedule
+        $subscription->setFirstOrderAlreadyCreated(true);
+        $subscription->setNextOrderDate(date('Y-m-d'));
+        $subscription->setInterval($interval);
+        // Magento specific
+        $subscription->setMagentoStoreCode($quote->getStore()->getCode());
 //        $subscription->setPlatformSpecificFields(array(
 //            'magento1' => array(
 //                'magento_website_id' => $quote->getStore()->getWebsiteId(),
@@ -359,7 +364,7 @@ class OrderService
 //                'magento_order_details' => $this->getOrderDetails($order),
 //            ),
 //        ));
-//        // Shipping
+        // Shipping
 //        if ($shippingAddress instanceof Mage_Sales_Model_Quote_Address) {
 //            $subscription->setRequiresShipping(true);
 //            $subscription->setMagentoShippingMethodCode($shippingAddress->getData('shipping_method'));
@@ -376,11 +381,11 @@ class OrderService
 //            $subscription->getShippingAddress()->setPhone($shippingAddress->getTelephone());
 //        }
 //        else {
-//            $subscription->setRequiresShipping(false);
-//            $subscription->setShippingAddress(null);
-//        }
-//
-//        // Return the new subscription model
-//        return $subscription;
+            $subscription->setRequiresShipping(false);
+            $subscription->setShippingAddress(null);
+      //  }
+
+        // Return the new subscription model
+        return $subscription;
     }
 }
