@@ -5,6 +5,7 @@ namespace Swarming\SubscribePro\Model\ApplePay;
 
 use Magento\Checkout\Helper\Data as CheckoutHelperData;
 use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Model\Method\Logger as PaymentLogger;
 use Magento\Quote\Api\CartRepositoryInterface;
@@ -18,6 +19,8 @@ use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Psr\Log\LoggerInterface;
 use Swarming\SubscribePro\Helper\Customer as CustomerHelper;
 use Swarming\SubscribePro\Model\Quote\SubscriptionCreator;
+use Swarming\SubscribePro\Platform\Manager\Product;
+use Swarming\SubscribePro\Platform\Service\Subscription;
 
 class OrderService
 {
@@ -63,7 +66,10 @@ class OrderService
     private $logger;
     private $subscriptionCreator;
     private $customerHelper;
-    private $subscription;
+    private $subscriptionPlatform;
+    private $productPlatform;
+    private $eventManager;
+    private $itemRepository;
 
     public function __construct(
         CartRepositoryInterface $quoteRepository,
@@ -78,7 +84,10 @@ class OrderService
         LoggerInterface $logger,
         SubscriptionCreator $subscriptionCreator,
         CustomerHelper $customerHelper,
-        \Swarming\SubscribePro\Platform\Service\Subscription $subscription
+        Subscription $subscriptionPlatform,
+        Product $productPlatform,
+        ManagerInterface $eventManager,
+        \Magento\Sales\Model\Order\ItemRepository $itemRepository
     ) {
         $this->quoteRepository = $quoteRepository;
         $this->quoteManagement = $quoteManagement;
@@ -92,7 +101,10 @@ class OrderService
         $this->logger = $logger;
         $this->subscriptionCreator = $subscriptionCreator;
         $this->customerHelper = $customerHelper;
-        $this->subscription = $subscription;
+        $this->subscriptionPlatform = $subscriptionPlatform;
+        $this->productPlatform = $productPlatform;
+        $this->eventManager = $eventManager;
+        $this->itemRepository = $itemRepository;
     }
 
     public function createOrder($quoteId): bool
@@ -184,8 +196,6 @@ class OrderService
         // Find customer and payment details
         $spCustomerId = $this->customerHelper->fetchSubscribeProCustomerId($quote->getCustomer());
 
-
-
 //        if (!strlen($spCustomerId)) {
         // Create customer because didn't exist
 //            $platformCustomer = $customerHelper->createOrUpdatePlatformCustomer($quote->getCustomer());
@@ -215,9 +225,13 @@ class OrderService
 //        return $subscriptions;
     }
 
-    private function checkAndCreateSubscriptionAndUpdateQuoteItem($spCustomerId,  $order,  $quoteItem, $shippingAddress)
+    private function checkAndCreateSubscriptionAndUpdateQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress)
     {
-        $interval = 'Test Interval - 3 days';
+        $interval = $quoteItem->getBuyRequest()->getSubscriptionOption()['interval'];
+        $platformProduct = $this->productPlatform->getProduct($quoteItem->getSku());
+        $interval = strlen($quoteItem->getBuyRequest()->getSubscriptionOption()['interval'])
+            ? $quoteItem->getBuyRequest()->getSubscriptionOption()['interval']
+            : $platformProduct->getDefaultInterval();
         $subscription = $this->createSubscriptionAndUpdateQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval);
 
         /** TODO VALIDATION **/
@@ -225,7 +239,7 @@ class OrderService
 //        $platformProductHelper = Mage::helper('autoship/platform_product');
 //        /** @var SubscribePro_Autoship_Helper_Product $productHelper */
 //        $productHelper = Mage::helper('autoship/product');
-//
+
 //        // Get subscription product profile
 //        $product = $this->getRelevantProductFromQuoteItem($quoteItem);
 //        // Check if product is enabled for subscription
@@ -249,72 +263,78 @@ class OrderService
 //        return null;
     }
 
-
-
-    private function createSubscriptionAndUpdateQuoteItem($spCustomerId,  $order, $quoteItem, $shippingAddress, $interval)
+    private function createSubscriptionAndUpdateQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval)
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-//        $subsciptionService = $objectManager->create('SubscribePro\Service\Subscription\SubscriptionService');
+        try {
+            $subscription = $this->createSubscriptionFromQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval);
+            $this->eventManager->dispatch(
+                'subscribepro_autoship_before_create_subscription_from_quote_item',
+                ['subscription' => $subscription, 'quote_item' => $quoteItem]
+            );
 
-        $subscription = $this->createSubscriptionFromQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval);
-        $this->subscription->saveSubscription($subscription);
-        //$subscription = $this->subscription->createSubscription($subscription);
-        /** TODO update quote **/
-//        /** @var SubscribePro_Autoship_Helper_Platform_Subscription $subscriptionHelper */
-//        $subscriptionHelper = Mage::helper('autoship/platform_subscription');
-//        try {
-//            // Create subscription from this item
-//            $subscription =
-//                $this->createSubscriptionFromQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval);
-//
-//            Mage::dispatchEvent('subscribepro_autoship_before_create_subscription_from_quote_item',
-//                array('subscription' => $subscription, 'quote_item' => $quoteItem));
-//
-//            // Create subscription via API
-//            $subscription = $subscriptionHelper->createSubscription($subscription);
+            $this->subscriptionPlatform->saveSubscription($subscription);
 //            // Save in array
-//            $subscriptions[$subscription->getId()] = $subscription;
+            $subscriptions[$subscription->getId()] = $subscription;
 //            // Save subscription id and flag on quote item
-//            $quoteItem->setData('subscription_id', $subscription->getId());
-//            $quoteItem->setData('subscription_interval', $subscription->getInterval());
-//            $quoteItem->setData('item_fulfils_subscription', true);
-//            $quoteItem->save();
+            $quoteItem->setData('subscription_id', $subscription->getId());
+            $quoteItem->setData('subscription_interval', $subscription->getInterval());
+            $quoteItem->setData('item_fulfils_subscription', true);
+            $quoteItem->save();
 //            // Lookup order item
-//            /** @var Mage_Sales_Model_Order_Item $orderItem */
-//            $orderItem = Mage::getModel('sales/order_item')->load($quoteItem->getId(), 'quote_item_id');
-//            // Save subscription id and flag on order item
-//            if(strlen($orderItem->getId())) {
-//                $orderItem->setData('subscription_id', $subscription->getId());
-//                $orderItem->setData('subscription_interval', $subscription->getInterval());
-//                $orderItem->setData('item_fulfils_subscription', true);
-//                $this->addAdditionalOptionsToOrderItem($orderItem);
-//                $orderItem->save();
-//            }
-//
-//            Mage::dispatchEvent('subscribepro_autoship_after_create_subscription_from_quote_item',
-//                array('subscription' => $subscription, 'quote_item' => $quoteItem));
-//
-//            return $subscription;
-//        }
-//        catch(\Exception $e) {
-//            SubscribePro_Autoship::log('Failed to create subscription with error: ' . $e->getMessage(), Zend_Log::ERR);
-//            SubscribePro_Autoship::logException($e);
-//
-//            // Increment failed subscription count
-//            Mage::getSingleton('checkout/session')->setData(
-//                'failed_subscription_count',
-//                1 + Mage::getSingleton('checkout/session')->getData('failed_subscription_count')
-//            );
-//        }
-//
-//        return null;
+            $orderItem = $this->itemRepository->get($quoteItem->getId());
+            //$orderItem = Mage::getModel('sales/order_item')->load($quoteItem->getId(), 'quote_item_id');
+            // Save subscription id and flag on order item
+            if (strlen($orderItem->getId())) {
+                $orderItem->setData('subscription_id', $subscription->getId());
+                $orderItem->setData('subscription_interval', $subscription->getInterval());
+                $orderItem->setData('item_fulfils_subscription', true);
+                $this->addAdditionalOptionsToOrderItem($orderItem);
+                $orderItem->save();
+            }
+
+            $this->eventManager->dispatch(
+                'subscribepro_autoship_after_create_subscription_from_quote_item',
+                ['subscription' => $subscription, 'quote_item' => $quoteItem]
+            );
+
+            return $subscription;
+        } catch (\Exception $e) {
+            var_dump($e);
+        }
+
+        return null;
+    }
+
+    public function addAdditionalOptionsToOrderItem($orderItem)
+    {
+        if ($orderItem->getData('item_fulfils_subscription')) {
+            // Get options
+            $options = $orderItem->getProductOptions();
+            // Get existing additional_options
+            if (isset($options['additional_options']) && is_array($options['additional_options'])) {
+                $additionalOptions = $options['additional_options'];
+            } else {
+                $additionalOptions = [];
+            }
+            // Add our details
+            $additionalOptions[] = [
+                'label' => __('Product Subscription Id'),
+                'value' => $orderItem->getData('subscription_id'),
+            ];
+            $additionalOptions[] = [
+                'label' => __('Subscription Interval'),
+                'value' => $orderItem->getData('subscription_interval'),
+            ];
+            // Set new additional_options on order item
+            $options['additional_options'] = $additionalOptions;
+            $orderItem->setProductOptions($options);
+        }
     }
 
     protected function createSubscriptionFromQuoteItem($spCustomerId, $order, $quoteItem, $shippingAddress, $interval)
     {
         //$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         //$subscriptionService = $objectManager->create('SubscribePro\Service\Subscription\SubscriptionService');
-
 
         //$subscriptionHelper = Mage::helper('autoship/platform_subscription');
 
@@ -325,7 +345,7 @@ class OrderService
         $product = $quoteItem->getProduct();
 
         // Empty subscription object
-        $subscription = $this->subscription->createSubscription();
+        $subscription = $this->subscriptionPlatform->createSubscription();
         // Customer
         $subscription->setCustomerId($spCustomerId);
         // Send notification
@@ -340,7 +360,7 @@ class OrderService
 //            $subscription->setPaymentProfileId($spPaymentProfileId);
 //        }
 //        else {
-            $subscription->setPaymentMethodCode($quote->getPayment()->getMethod());
+        $subscription->setPaymentMethodCode($quote->getPayment()->getMethod());
         //}
         // Product
         $subscription->setProductSku($product->getSku());
@@ -381,9 +401,9 @@ class OrderService
 //            $subscription->getShippingAddress()->setPhone($shippingAddress->getTelephone());
 //        }
 //        else {
-            $subscription->setRequiresShipping(false);
-            $subscription->setShippingAddress(null);
-      //  }
+        $subscription->setRequiresShipping(false);
+        $subscription->setShippingAddress(null);
+        //  }
 
         // Return the new subscription model
         return $subscription;
