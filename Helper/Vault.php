@@ -59,8 +59,9 @@ class Vault
     ) {
         $token->setPaymentMethodCode($paymentMethodCode);
         $token->setGatewayToken($profile->getId());
-        $token->setIsActive(true);
-        $token->setIsVisible(true);
+        // @see details \Magento\Vault\Observer\AfterPaymentSaveObserver::execute
+        $token->setIsActive(($paymentMethodCode === ConfigProvider::CODE));
+        $token->setIsVisible(($paymentMethodCode === ConfigProvider::CODE));
         $token->setCustomerId($profile->getMagentoCustomerId());
         $token->setTokenDetails($this->getTokenDetails(
             $profile->getCreditcardType(),
