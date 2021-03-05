@@ -24,4 +24,7 @@
     <event name="sales_quote_item_set_product">
         <observer name="subscribe_pro_sales_quote_item_set_product" instance="Swarming\SubscribePro\Observer\QuoteItem\SetProduct" />
     </event>
+    <event name="sales_order_payment_save_after">
+        <observer name="hide_stored_applepay_method" instance="Swarming\SubscribePro\Observer\Payment\AfterPaymentSaveObserver" />
+    </event>
 </config>
