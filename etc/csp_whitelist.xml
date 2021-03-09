@@ -4,12 +4,16 @@
         <policy id="style-src">
             <values>
                 <value id="static-subscribepro-css" type="host">*.subscribepro.com</value>
+                <value id="static-theme-wallet-css" type="host">*.netlify.com</value>
+                <value id="static-wallet-css" type="host">*.netlify.app</value>
             </values>
         </policy>
         <policy id="script-src">
             <values>
                 <value id="core-spreedly" type="host">core.spreedly.com</value>
                 <value id="hosted-subscribepro-js" type="host">*.subscribepro.com</value>
+                <value id="hosted-wallet-js" type="host">*.netlify.app</value>
+                <value id="hosted-theme-wallet-js" type="host">*.netlify.com</value>
             </values>
         </policy>
         <policy id="connect-src">
