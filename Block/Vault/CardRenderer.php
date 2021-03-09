@@ -56,4 +56,9 @@ class CardRenderer extends AbstractCardRenderer
     {
         return $this->getIconForType($this->getTokenDetails()['type'])['width'];
     }
+
+    public function getPaymentProfileId()
+    {
+        return $this->getToken()->getGatewayToken();
+    }
 }

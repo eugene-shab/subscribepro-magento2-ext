@@ -4,6 +4,9 @@
         <referenceContainer name="page.main.title">
             <block class="Swarming\SubscribePro\Block\Vault\AddButton" name="vault.cards.add_button" template="Swarming_SubscribePro::vault/add_button.phtml" before="vault.cards.list" />
         </referenceContainer>
+        <referenceContainer name="content">
+            <block class="Swarming\SubscribePro\Block\Wallet\Delete" name="subscribepro.wallet.card" template="Swarming_SubscribePro::wallet/delete-function.phtml" />
+        </referenceContainer>
         <referenceBlock name="vault.cards.list">
             <block class="Swarming\SubscribePro\Block\Vault\CardRenderer" name="subscribepro.card.renderer" template="Swarming_SubscribePro::vault/card_render.phtml" />
         </referenceBlock>

@@ -1,0 +1,54 @@
+<?php
+/** @var $block \Swarming\SubscribePro\Block\Wallet\Delete */
+/** @var $escaper \Magento\Framework\Escaper */
+?>
+<?php
+//$config = $block->preparingPaymentConfig();
+$walletWidgetUrl = $block->getWalletWidgetUrl();
+$walletWidgetJson = $block->getWalletWidgetJson();
+?>
+<script src="<?php echo $walletWidgetUrl; ?>"></script>
+<script>
+    var paymentProfileConfig = {};
+require([
+    'jquery',
+], function($){
+    var cardTable = $('#my-orders-table'),
+        removeBtnList = cardTable.find('tr form button.action.delete');
+
+    if (removeBtnList.length) {
+        removeBtnList.on('click', function (event) {
+            event.stopPropagation();
+
+            let self = $(this),
+                paymentProfile =  {
+                id: self.data('profile-id'),
+            };
+
+            WalletAssist.onBeforePaymentProfileDeleted({"paymentProfile": paymentProfile}, function (paymentProfile, shouldDelete) {
+                if (shouldDelete) {
+                    self.closest('form').submit();
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+
+            return false;
+        });
+
+        let baseWidgetConfig = {
+            apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",
+            customerId: <?php echo $block->getPlatformCustomerId(); ?>
+        };
+
+        let widgetConfig = <?php echo $walletWidgetJson; ?>;
+        for (let key in baseWidgetConfig) {
+            widgetConfig[key] = baseWidgetConfig[key];
+        }
+
+        WalletAssist.init(widgetConfig);
+    }
+});
+</script>
+<div id="sp-wallet"></div>
