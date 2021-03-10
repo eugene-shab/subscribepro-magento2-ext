@@ -16,15 +16,15 @@ class Address extends Template
     /**
      * @var PlatformCustomer
      */
-    private $platformCustomerManager;
+    protected $platformCustomerManager;
     /**
      * @var CustomerSession
      */
-    private $customerSession;
+    protected $customerSession;
     /**
      * @var PlatformOauthTool
      */
-    private $oauthTool;
+    protected $oauthTool;
 
     public function __construct(
         Context $context,

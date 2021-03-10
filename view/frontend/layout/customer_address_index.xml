@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Swarming\SubscribePro\Block\Customer\Widget\Delete" name="swarming.address.book.delete.widget"
+                   template="Swarming_SubscribePro::customer/widget/delete.phtml" after="address_grid"/>
+        </referenceContainer>
+    </body>
+</page>

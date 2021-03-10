@@ -49,7 +49,7 @@ require([
             };
 
             AddressBookAssist.onAddressCreated({"address": address})
-                .then(function () {
+                .then(function (platformAddress) {
                     isLoaded = true;
                     formContainer.submit();
                 })

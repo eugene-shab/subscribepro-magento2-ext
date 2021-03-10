@@ -1,0 +1,53 @@
+<?php
+/** @var $block Swarming\SubscribePro\Block\Customer\Widget\Delete */
+/** @var $escaper \Magento\Framework\Escaper */
+?>
+<?php if ($block->isAddressBookEnabled()): ?>
+<?php
+$addressWidgetUrl = $block->getAddressWidgetUrl();
+$addressWidgetJson = $block->getAddressWidgetJson();
+?>
+<script src="<?php echo $escaper->escapeUrl($addressWidgetUrl); ?>"></script>
+<script>
+    let widgetConfig = <?php echo $addressWidgetJson; ?>;
+
+    require([
+        'jquery',
+    ], function($){
+        let tableContainer = $('#additional-addresses-table'),
+            removeBtnList = tableContainer.find('tr a.action.delete');
+            isLoaded = false;
+
+        if (removeBtnList.length) {
+            removeBtnList.on('click', function (event) {
+                event.stopPropagation();
+                let self = $(this),
+                    platformAddress =  {
+                        id: self.data('platform-address-id'),
+                    };
+
+                //TODO: delete address in platform.
+                // AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (paymentProfile, shouldDelete) {
+                //     if (shouldDelete) {
+                //         self.closest('form').submit();
+                //         return true;
+                //     } else {
+                //         return false;
+                //     }
+                // });
+            });
+        }
+
+        let baseWidgetConfig = {
+            apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",
+            customerId: <?php echo $block->getPlatformCustomerId(); ?>
+        };
+
+        for (let key in baseWidgetConfig) {
+            widgetConfig[key] = baseWidgetConfig[key];
+        }
+        AddressBookAssist.init(widgetConfig);
+    });
+</script>
+<div id="sp-address-book"></div>
+<?php endif; ?>
