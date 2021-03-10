@@ -216,6 +216,31 @@
                         <field id="swarming_subscribepro/advanced/enable_hosted_wallet_widget">1</field>
                     </depends>
                 </field>
+
+                <field id="enable_hosted_address_book_widget" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable Hosted Address Book Widget</label>
+                    <comment>This enables the hosted version of the Address Book Widget.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="swarming_subscribepro/general/enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="hosted_address_book_widget_url" translate="label comment" type="text" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Hosted Address Book Widget Source URL</label>
+                    <comment>Enter the hosted widget source URL provided by Subscribe Pro Support.</comment>
+                    <depends>
+                        <field id="swarming_subscribepro/advanced/enable_hosted_address_book_widget">1</field>
+                    </depends>
+                </field>
+
+                <field id="custom_json_hosted_address_book_widget" translate="label comment" type="textarea" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Hosted Address Book Widget Configuration</label>
+                    <comment>Enter custom Javascript object containing configuration, provided by Subscribe Pro Support, to set the style and functionality of the Hosted Address Book Widget.</comment>
+                    <depends>
+                        <field id="swarming_subscribepro/advanced/enable_hosted_address_book_widget">1</field>
+                    </depends>
+                </field>
             </group>
 
             <group id="shipperhq" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
