@@ -46,6 +46,9 @@ abstract class AbstractAddress extends Template
         $this->addressRepository = $addressRepository;
     }
 
+    /**
+     * @return bool
+     */
     public function isAddressBookEnabled(): bool
     {
         $store = $this->_storeManager->getStore();
@@ -58,6 +61,9 @@ abstract class AbstractAddress extends Template
         );
     }
 
+    /**
+     * @return string
+     */
     public function getAddressWidgetUrl(): string
     {
         $store = $this->_storeManager->getStore();
@@ -71,6 +77,9 @@ abstract class AbstractAddress extends Template
         return ($value)?? '';
     }
 
+    /**
+     * @return string
+     */
     public function getAddressWidgetJson(): string
     {
         $store = $this->_storeManager->getStore();
@@ -84,6 +93,9 @@ abstract class AbstractAddress extends Template
         return ($value)?? '';
     }
 
+    /**
+     * @return int|null
+     */
     public function getPlatformCustomerId(): ?int
     {
         try {
@@ -116,6 +128,9 @@ abstract class AbstractAddress extends Template
         return $accessToken['access_token'];
     }
 
+    /**
+     * @return int
+     */
     public function getCustomerId(): int
     {
         return (int) $this->customerSession->getCustomerId();

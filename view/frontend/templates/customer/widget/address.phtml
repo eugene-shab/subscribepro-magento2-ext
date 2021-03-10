@@ -6,14 +6,13 @@
 <?php
 $addressWidgetUrl = $block->getAddressWidgetUrl();
 $addressWidgetJson = $block->getAddressWidgetJson();
+$currentAddress = $block->getCurrentAddress();
 ?>
 <script src="<?php echo $escaper->escapeUrl($addressWidgetUrl); ?>"></script>
 <script>
 let widgetConfig = <?php echo $addressWidgetJson; ?>;
 
-require([
-    'jquery',
-], function($){
+require(function($){
     let formContainer = $('form#form-validate'),
         isLoaded = false;
 
@@ -35,6 +34,7 @@ require([
                 }
                 dataObj[fieldName] = field.value;
             });
+
             let address = {
                 "firstName": dataObj.firstname,
                 "lastName": dataObj.lastname,
@@ -47,15 +47,31 @@ require([
                 "country": dataObj.country_id,
                 "phone": dataObj.telephone
             };
+            if (dataObj['default_billing'] === "1") {
+                let defaultBilling = <?php echo json_encode($currentAddress); ?>;
 
-            AddressBookAssist.onAddressCreated({"address": address})
-                .then(function (platformAddress) {
-                    isLoaded = true;
-                    formContainer.submit();
+                AddressBookAssist.onDefaultBillingChanged({
+                    "previousDefaultAddress": defaultBilling,
+                    "newDefaultAddress": dataObj
                 })
-                .catch((error) => {
-                    console.error(error);
-                });
+                    .then(function (platformAddress) {
+                        isLoaded = true;
+                        debugger;
+                        formContainer.submit();
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            } else {
+                AddressBookAssist.onAddressCreated({"address": address})
+                    .then(function (platformAddress) {
+                        isLoaded = true;
+                        formContainer.submit();
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }
 
             return false;
         } else {
@@ -74,7 +90,9 @@ require([
         widgetConfig[key] = baseWidgetConfig[key];
     }
     AddressBookAssist.init(widgetConfig);
-});
+}, [
+    'jquery',
+]);
 </script>
 <div id="sp-address-book"></div>
 <?php endif; ?>
