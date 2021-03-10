@@ -41,6 +41,18 @@ class Delete extends CreditCards
         $this->oauthTool = $oauth;
     }
 
+    public function isWalletEnabled()
+    {
+        $store = $this->_storeManager->getStore();
+        $path = 'swarming_subscribepro/advanced/enable_hosted_wallet_widget';
+
+        return $this->_scopeConfig->isSetFlag(
+            $path,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
     public function getWalletWidgetUrl()
     {
         $store = $this->_storeManager->getStore();

@@ -2,14 +2,13 @@
 /** @var $block \Swarming\SubscribePro\Block\Wallet\Delete */
 /** @var $escaper \Magento\Framework\Escaper */
 ?>
+<?php if ($block->isWalletEnabled()): ?>
 <?php
-//$config = $block->preparingPaymentConfig();
 $walletWidgetUrl = $block->getWalletWidgetUrl();
 $walletWidgetJson = $block->getWalletWidgetJson();
 ?>
 <script src="<?php echo $walletWidgetUrl; ?>"></script>
 <script>
-    var paymentProfileConfig = {};
 require([
     'jquery',
 ], function($){
@@ -52,3 +51,4 @@ require([
 });
 </script>
 <div id="sp-wallet"></div>
+<?php endif; ?>
