@@ -10,6 +10,9 @@ class Address extends AbstractAddress
     public function getCurrentAddress(): array
     {
         $addressId = $this->getRequest()->getParam('id');
+        if (!$addressId) {
+            return [];
+        }
         try {
             $address = $this->addressRepository->getById($addressId);
             $result =  [
