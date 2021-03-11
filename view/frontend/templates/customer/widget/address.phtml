@@ -12,7 +12,9 @@ $currentAddress = $block->getCurrentAddress();
 <script>
 let widgetConfig = <?php echo $addressWidgetJson; ?>;
 
-require(function($){
+require([
+    'jquery',
+], function($){
     let formContainer = $('form#form-validate'),
         isLoaded = false;
 
@@ -24,7 +26,8 @@ require(function($){
         if (formContainer.validation() && formContainer.validation('isValid')) {
             let formData = formContainer.serializeArray(),
                 dataObj = {},
-                counter = 1;
+                counter = 1,
+                defaultBilling = <?php echo json_encode($block->getCurrentAddress(), JSON_FORCE_OBJECT); ?>;
 
             $(formData).each(function(i, field) {
                 let fieldName = field.name;
@@ -47,17 +50,14 @@ require(function($){
                 "country": dataObj.country_id,
                 "phone": dataObj.telephone
             };
-            if (dataObj['default_billing'] === "1") {
-                let defaultBilling = <?php echo json_encode($currentAddress); ?>;
-
+            if (defaultBilling && dataObj['default_billing'] === "1") {
                 AddressBookAssist.onDefaultBillingChanged({
                     "previousDefaultAddress": defaultBilling,
                     "newDefaultAddress": dataObj
                 })
                     .then(function (platformAddress) {
                         isLoaded = true;
-                        debugger;
-                        formContainer.submit();
+                        //formContainer.submit();
                     })
                     .catch((error) => {
                         console.error(error);
@@ -66,6 +66,11 @@ require(function($){
                 AddressBookAssist.onAddressCreated({"address": address})
                     .then(function (platformAddress) {
                         isLoaded = true;
+                        $('<input />').attr('type', 'hidden')
+                            .attr('name', 'platform_address_id')
+                            .attr('value', platformAddress.id)
+                            .appendTo('form#form-validate');
+
                         formContainer.submit();
                     })
                     .catch((error) => {
