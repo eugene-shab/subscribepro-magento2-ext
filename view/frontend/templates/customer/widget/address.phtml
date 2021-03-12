@@ -25,6 +25,7 @@ require([
             return true;
         }
         e.stopImmediatePropagation();
+        // TODO: maybe need to disable "Save Address" button during AddressBookAssist call.
         if (formContainer.validation() && formContainer.validation('isValid')) {
             let formData = formContainer.serializeArray(),
                 dataObj = {},
