@@ -15,36 +15,48 @@ require([
     'jquery',
 ], function($){
     let tableContainer = $('#additional-addresses-table'),
-        removeBtnList = tableContainer.find('tr a.action.delete');
+        removeBtnList = tableContainer.find('tr a.action.delete'),
+        deleteUrlPrefix = "<?php echo $escaper->escapeJs($escaper->escapeUrl($block->getDeleteUrl())) ?>id/",
+        isLoaded = false;
 
     if (removeBtnList.length) {
         removeBtnList.on('click', function (e) {
             let self = $(this),
                 platformAddress =  {
-                    id: self.data('platform-address-id'),
+                    id: parseInt(self.data('platform-address-id')),
                 };
 
+            if (isLoaded) {
+                return true;
+            }
+
+            e.stopImmediatePropagation();
             e.stopPropagation();
+            e.preventDefault();
 
             AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (address, shouldDelete) {
                 if (shouldDelete === "delete") {
-                    // @see mage.address._deleteAddress
+                    // // @see mage.address._deleteAddress
                     if (typeof $(e.target).parent().data('address') !== 'undefined') {
-                        window.location = self.options.deleteUrlPrefix + $(e.target).parent().data('address') +
+                        window.location = deleteUrlPrefix + $(e.target).parent().data('address') +
                             '/form_key/' + $.mage.cookies.get('form_key');
                     } else {
-                        window.location = self.options.deleteUrlPrefix + $(e.target).data('address') +
+                        window.location = deleteUrlPrefix + $(e.target).data('address') +
                             '/form_key/' + $.mage.cookies.get('form_key');
                     }
 
-                    return true;
+                } else if (shouldDelete === "not_found") {
+                    console.log(shouldDelete);
+                    isLoaded = true;
+                    self.click();
                 } else {
                     console.log(shouldDelete);
-                    return false;
                 }
             }).catch((error) => {
                 console.error(error);
             });
+
+            return false;
         });
     }
 
