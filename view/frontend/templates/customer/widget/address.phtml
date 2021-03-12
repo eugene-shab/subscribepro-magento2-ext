@@ -67,7 +67,6 @@ require([
                         console.error(error);
                     });
             } else {
-                debugger;
                 AddressBookAssist.onAddressCreated({"address": address})
                     .then(function (platformAddress) {
                         isLoaded = true;
