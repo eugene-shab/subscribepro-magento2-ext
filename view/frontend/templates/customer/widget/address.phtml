@@ -66,6 +66,19 @@ require([
                     .catch((error) => {
                         console.error(error);
                     });
+            } else if (currentAddress.hasOwnProperty('id') && (!dataObj['default_billing'] && !dataObj['default_billing'])) {
+                address['id'] = currentAddress.id; // added id for SP.
+                delete currentAddress['region_id'];// remove unneccessary field for SP.
+
+                AddressBookAssist.onAddressUpdated({previousAddress: currentAddress, newAddress: address});
+                $('<input />').attr('type', 'hidden')
+                    .attr('name', 'platform_address_id')
+                    .attr('value', currentAddress.id)
+                    .appendTo('form#form-validate');
+                isLoaded = true;
+                setTimeout(function () {
+                    formContainer.submit();
+                }, 100);
             } else {
                 AddressBookAssist.onAddressCreated({"address": address})
                     .then(function (platformAddress) {
@@ -99,9 +112,7 @@ require([
         widgetConfig[key] = baseWidgetConfig[key];
     }
     AddressBookAssist.init(widgetConfig);
-}, [
-    'jquery',
-]);
+});
 </script>
 <div id="sp-address-book"></div>
 <?php endif; ?>
