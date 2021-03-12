@@ -52,4 +52,8 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Magento\Customer\Block\Address\Grid">
+        <plugin name="subscribepro_customer_address_grid_fix" type="Swarming\SubscribePro\Plugin\Customer\Address\GridBlock"/>
+    </type>
 </config>

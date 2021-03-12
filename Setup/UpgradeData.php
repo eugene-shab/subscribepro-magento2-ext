@@ -29,27 +29,29 @@ class UpgradeData implements UpgradeDataInterface
         if (version_compare($context->getVersion(), '1.3.8') < 0) {
             $customerSetup->addAttribute('customer_address', self::PLATFORM_ADDRESS_ID_FIELD, [
                 'label' => 'Platform Address ID',
-                'input' => 'varchar',
-                'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                'type' => 'varchar',
+                'input' => 'text',
                 'source' => '',
                 'required' => false,
                 'position' => 150,
+                'global' => true,
                 'visible' => true,
                 'system' => false,
                 'is_used_in_grid' => false,
                 'is_visible_in_grid' => false,
                 'is_filterable_in_grid' => false,
                 'is_searchable_in_grid' => false,
-                'frontend_input' => 'hidden',
+                'frontend_input' => '',
                 'backend' => ''
             ]);
 
-            $attribute=$customerSetup->getEavConfig()
+            $attribute = $customerSetup->getEavConfig()
                 ->getAttribute('customer_address', self::PLATFORM_ADDRESS_ID_FIELD)
                 ->addData(['used_in_forms' => [
                     'adminhtml_customer_address',
                     'customer_address_edit',
                     'customer_address',
+                    'customer_register_address',
                 ]
                 ]);
 

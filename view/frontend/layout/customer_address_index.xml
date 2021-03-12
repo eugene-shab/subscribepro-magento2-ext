@@ -3,7 +3,13 @@
     <body>
         <referenceContainer name="content">
             <block class="Swarming\SubscribePro\Block\Customer\Widget\Delete" name="swarming.address.book.delete.widget"
-                   template="Swarming_SubscribePro::customer/widget/delete.phtml" after="address_grid"/>
+                   template="Swarming_SubscribePro::customer/widget/delete.phtml" after="address_grid"
+                   ifconfig="swarming_subscribepro/advanced/enable_hosted_address_book_widget"/>
         </referenceContainer>
+        <referenceBlock name="address_grid">
+            <action method="setTemplate" ifconfig="swarming_subscribepro/advanced/enable_hosted_address_book_widget">
+                <argument name="template" xsi:type="string">Swarming_SubscribePro::customer/address/grid.phtml</argument>
+            </action>
+        </referenceBlock>
     </body>
 </page>

@@ -383,4 +383,14 @@
           </argument>
        </arguments>
     </type>
+
+    <type name="Magento\Eav\Model\Config">
+        <arguments>
+            <argument name="attributesForPreload" xsi:type="array">
+                <item name="customer_address" xsi:type="array">
+                    <item name="platform_address_id" xsi:type="string">customer_address</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>

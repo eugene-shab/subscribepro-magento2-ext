@@ -26,15 +26,16 @@ $addressWidgetJson = $block->getAddressWidgetJson();
                         id: self.data('platform-address-id'),
                     };
 
-                //TODO: delete address in platform.
-                // AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (paymentProfile, shouldDelete) {
-                //     if (shouldDelete) {
-                //         self.closest('form').submit();
-                //         return true;
-                //     } else {
-                //         return false;
-                //     }
-                // });
+                AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (address, shouldDelete) {
+                    if (shouldDelete  === "delete") {
+                        self.closest('form').submit();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }).catch((error) => {
+                    console.error(error);
+                });
             });
         }
 

@@ -7,6 +7,7 @@
 $addressWidgetUrl = $block->getAddressWidgetUrl();
 $addressWidgetJson = $block->getAddressWidgetJson();
 $currentAddress = $block->getCurrentAddress();
+$defaultBillingAddress = $block->getCustomerDefaultBillingAddress();
 ?>
 <script src="<?php echo $escaper->escapeUrl($addressWidgetUrl); ?>"></script>
 <script>
@@ -16,6 +17,7 @@ require([
     'jquery',
 ], function($){
     let formContainer = $('form#form-validate'),
+        button = formContainer.find('.primary button.action.save.primary')
         isLoaded = false;
 
     formContainer.submit(function(e) {
@@ -27,7 +29,8 @@ require([
             let formData = formContainer.serializeArray(),
                 dataObj = {},
                 counter = 1,
-                defaultBilling = <?php echo json_encode($block->getCurrentAddress(), JSON_FORCE_OBJECT); ?>;
+                currentAddress = <?php echo json_encode($block->getCurrentAddress(), JSON_FORCE_OBJECT); ?>,
+                defaultBillingAddress = <?php echo json_encode($defaultBillingAddress, JSON_FORCE_OBJECT); ?>;
 
             $(formData).each(function(i, field) {
                 let fieldName = field.name;
@@ -50,19 +53,21 @@ require([
                 "country": dataObj.country_id,
                 "phone": dataObj.telephone
             };
-            if (defaultBilling && dataObj['default_billing'] === "1") {
+
+            if (defaultBillingAddress.hasOwnProperty('id') && currentAddress.hasOwnProperty('id') && dataObj['default_billing'] === "1") {
+
                 AddressBookAssist.onDefaultBillingChanged({
-                    "previousDefaultAddress": defaultBilling,
-                    "newDefaultAddress": dataObj
+                    "previousDefaultAddress": defaultBillingAddress,
+                    "newDefaultAddress": currentAddress
                 })
                     .then(function (platformAddress) {
-                        isLoaded = true;
-                        //formContainer.submit();
+
                     })
                     .catch((error) => {
                         console.error(error);
                     });
             } else {
+                debugger;
                 AddressBookAssist.onAddressCreated({"address": address})
                     .then(function (platformAddress) {
                         isLoaded = true;
