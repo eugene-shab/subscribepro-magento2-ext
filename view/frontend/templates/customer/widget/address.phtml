@@ -55,14 +55,24 @@ require([
                 "phone": dataObj.telephone
             };
 
+            // TODO: check is equal addresses (new and previous).
+            // TODO: check is check billing or shipping or both without address changing.
+            // TODO: check is check billing or shipping or both with address changing.
+            // TODO: save addresses to session and show popup after Magento's save.
             if (defaultBillingAddress.hasOwnProperty('id') && currentAddress.hasOwnProperty('id') && dataObj['default_billing'] === "1") {
-
+                debugger;
                 AddressBookAssist.onDefaultBillingChanged({
                     "previousDefaultAddress": defaultBillingAddress,
                     "newDefaultAddress": currentAddress
                 })
                     .then(function (platformAddress) {
-
+                        debugger;
+                        // $('<input />').attr('type', 'hidden')
+                        //     .attr('name', 'platform_address_id')
+                        //     .attr('value', currentAddress.id)
+                        //     .appendTo('form#form-validate');
+                        // isLoaded = true;
+                        // formContainer.submit();
                     })
                     .catch((error) => {
                         console.error(error);
