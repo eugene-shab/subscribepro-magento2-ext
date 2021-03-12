@@ -9,46 +9,55 @@ $addressWidgetJson = $block->getAddressWidgetJson();
 ?>
 <script src="<?php echo $escaper->escapeUrl($addressWidgetUrl); ?>"></script>
 <script>
-    let widgetConfig = <?php echo $addressWidgetJson; ?>;
+let widgetConfig = <?php echo $addressWidgetJson; ?>;
 
-    require([
-        'jquery',
-    ], function($){
-        let tableContainer = $('#additional-addresses-table'),
-            removeBtnList = tableContainer.find('tr a.action.delete');
-            isLoaded = false;
+require([
+    'jquery',
+], function($){
+    let tableContainer = $('#additional-addresses-table'),
+        removeBtnList = tableContainer.find('tr a.action.delete');
 
-        if (removeBtnList.length) {
-            removeBtnList.on('click', function (event) {
-                event.stopPropagation();
-                let self = $(this),
-                    platformAddress =  {
-                        id: self.data('platform-address-id'),
-                    };
+    if (removeBtnList.length) {
+        removeBtnList.on('click', function (e) {
+            let self = $(this),
+                platformAddress =  {
+                    id: self.data('platform-address-id'),
+                };
 
-                AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (address, shouldDelete) {
-                    if (shouldDelete  === "delete") {
-                        self.closest('form').submit();
-                        return true;
+            e.stopPropagation();
+
+            AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (address, shouldDelete) {
+                if (shouldDelete === "delete") {
+                    // @see mage.address._deleteAddress
+                    if (typeof $(e.target).parent().data('address') !== 'undefined') {
+                        window.location = self.options.deleteUrlPrefix + $(e.target).parent().data('address') +
+                            '/form_key/' + $.mage.cookies.get('form_key');
                     } else {
-                        return false;
+                        window.location = self.options.deleteUrlPrefix + $(e.target).data('address') +
+                            '/form_key/' + $.mage.cookies.get('form_key');
                     }
-                }).catch((error) => {
-                    console.error(error);
-                });
+
+                    return true;
+                } else {
+                    console.log(shouldDelete);
+                    return false;
+                }
+            }).catch((error) => {
+                console.error(error);
             });
-        }
+        });
+    }
 
-        let baseWidgetConfig = {
-            apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",
-            customerId: <?php echo $block->getPlatformCustomerId(); ?>
-        };
+    let baseWidgetConfig = {
+        apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",
+        customerId: <?php echo $block->getPlatformCustomerId(); ?>
+    };
 
-        for (let key in baseWidgetConfig) {
-            widgetConfig[key] = baseWidgetConfig[key];
-        }
-        AddressBookAssist.init(widgetConfig);
-    });
+    for (let key in baseWidgetConfig) {
+        widgetConfig[key] = baseWidgetConfig[key];
+    }
+    AddressBookAssist.init(widgetConfig);
+});
 </script>
 <div id="sp-address-book"></div>
 <?php endif; ?>
