@@ -7,18 +7,90 @@
 $addressWidgetUrl = $block->getAddressWidgetUrl();
 $addressWidgetJson = $block->getAddressWidgetJson();
 $currentAddress = $block->getCurrentAddress();
-$defaultBillingAddress = $block->getCustomerDefaultBillingAddress();
+$defaultBillingAddress = $block->getCustomerDefaultAddressByType();
+$defaultShippingAddress = $block->getCustomerDefaultAddressByType('shipping');
 ?>
 <script src="<?php echo $escaper->escapeUrl($addressWidgetUrl); ?>"></script>
 <script>
-let widgetConfig = <?php echo $addressWidgetJson; ?>;
+let widgetConfig = <?php echo $addressWidgetJson; ?>,
+    currentAddress = <?php echo json_encode($block->getCurrentAddress(), JSON_FORCE_OBJECT); ?>,
+    defaultBillingAddress = <?php echo json_encode($defaultBillingAddress, JSON_FORCE_OBJECT); ?>,
+    defaultShippingAddress = <?php echo json_encode($defaultShippingAddress, JSON_FORCE_OBJECT); ?>;
 
 require([
     'jquery',
 ], function($){
     let formContainer = $('form#form-validate'),
-        button = formContainer.find('.primary button.action.save.primary')
         isLoaded = false;
+
+    function compareAddresses(address1, address2) {
+        for (let property in address1) {
+            if(address1.hasOwnProperty(property) && property !== 'region'){
+                if(address1[property] !== address2[property]) {
+                    console.log('Difference in', property)
+                    console.log(address1[property], address2[property])
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    function runOnDefaultAddressChanged(previousDefaultAddress, newDefaultAddress, defaultBilling, defaultShipping, cb) {
+        let requestData = {};
+
+        // Proceed with checklboxes.
+        if (defaultBilling === "1" && defaultShipping === '1') {
+            // TODO: Need to refactor it.
+            requestData.default_billing = 1;
+            requestData.default_shipping = 1;
+        } else if (defaultBilling === "1") {
+            requestData.default_billing = 1;
+            requestData.default_shipping = 0;
+        } else if (defaultShipping === "1") {
+            requestData.default_billing = 0;
+            requestData.default_shipping = 1;
+        } else {
+            console.error('Something going wrong with "Use as default billing / shipping address" !');
+            return  false;
+        }
+
+        $.extend(requestData, {
+            'form_key': $.mage.cookies.get('form_key'),
+            'previous_default_address': previousDefaultAddress,
+            'new_default_address': newDefaultAddress
+        });
+        debugger;
+        $.ajax({
+            url: '<?php echo $escaper->escapeUrl($block->getAddressSaveSessionUrl()); ?>',
+            data: requestData,
+            type: 'post',
+            dataType: 'json',
+            context: this,
+            beforeSend: function () {
+                //elem.attr('disabled', 'disabled');
+            },
+            complete: function () {
+                // elem.attr('disabled', null);
+                debugger;
+            }
+        })
+            .done(function (response) {
+                var msg;
+
+                debugger;
+                if (response.success) {
+                    debugger;
+                    cb();
+                } else {
+                    debugger;
+                }
+            })
+            .fail(function (error) {
+                console.error(JSON.stringify(error));
+            });
+    }
 
     formContainer.submit(function(e) {
         if (isLoaded) {
@@ -29,9 +101,7 @@ require([
         if (formContainer.validation() && formContainer.validation('isValid')) {
             let formData = formContainer.serializeArray(),
                 dataObj = {},
-                counter = 1,
-                currentAddress = <?php echo json_encode($block->getCurrentAddress(), JSON_FORCE_OBJECT); ?>,
-                defaultBillingAddress = <?php echo json_encode($defaultBillingAddress, JSON_FORCE_OBJECT); ?>;
+                counter = 1;
 
             $(formData).each(function(i, field) {
                 let fieldName = field.name;
@@ -55,42 +125,50 @@ require([
                 "phone": dataObj.telephone
             };
 
-            // TODO: check is equal addresses (new and previous).
-            // TODO: check is check billing or shipping or both without address changing.
-            // TODO: check is check billing or shipping or both with address changing.
-            // TODO: save addresses to session and show popup after Magento's save.
-            if (defaultBillingAddress.hasOwnProperty('id') && currentAddress.hasOwnProperty('id') && dataObj['default_billing'] === "1") {
-                debugger;
-                AddressBookAssist.onDefaultBillingChanged({
-                    "previousDefaultAddress": defaultBillingAddress,
-                    "newDefaultAddress": currentAddress
-                })
-                    .then(function (platformAddress) {
-                        debugger;
-                        // $('<input />').attr('type', 'hidden')
-                        //     .attr('name', 'platform_address_id')
-                        //     .attr('value', currentAddress.id)
-                        //     .appendTo('form#form-validate');
-                        // isLoaded = true;
-                        // formContainer.submit();
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
-            } else if (currentAddress.hasOwnProperty('id') && (!dataObj['default_billing'] && !dataObj['default_billing'])) {
-                address['id'] = currentAddress.id; // added id for SP.
-                delete currentAddress['region_id'];// remove unneccessary field for SP.
+            // Edit Address Case
+            if (currentAddress.hasOwnProperty('id')) {
 
-                AddressBookAssist.onAddressUpdated({previousAddress: currentAddress, newAddress: address});
-                $('<input />').attr('type', 'hidden')
-                    .attr('name', 'platform_address_id')
-                    .attr('value', currentAddress.id)
-                    .appendTo('form#form-validate');
-                isLoaded = true;
-                setTimeout(function () {
-                    formContainer.submit();
-                }, 100);
+                //Preparations
+                address['id'] = currentAddress.id; // added id for SP.
+                delete currentAddress['region_id'];// remove unnecessary field for SP
+
+                //Is Equal Addresses.
+                let isEqualAddress = compareAddresses(currentAddress, address);
+                debugger;
+                if (isEqualAddress) {
+                    runOnDefaultAddressChanged(defaultBillingAddress, currentAddress, dataObj['default_billing'], dataObj['default_shipping']
+                        , function() {
+                            $('<input />').attr('type', 'hidden')
+                                .attr('name', 'platform_address_id')
+                                .attr('value', currentAddress.id)
+                                .appendTo('form#form-validate');
+                            debugger;
+                            isLoaded = true;
+                            formContainer.submit();
+                    });
+                } else {
+                    AddressBookAssist.onAddressUpdated({previousAddress: currentAddress, newAddress: address});
+                    setTimeout(function () {
+                        runOnDefaultAddressChanged(
+                            defaultBillingAddress,
+                            currentAddress,
+                            dataObj['default_billing'],
+                            dataObj['default_shipping'],
+                            function() {
+                                $('<input />').attr('type', 'hidden')
+                                    .attr('name', 'platform_address_id')
+                                    .attr('value', currentAddress.id)
+                                    .appendTo('form#form-validate');
+                                debugger;
+                                isLoaded = true;
+                                formContainer.submit();
+                            });
+                    }, 100);
+                }
+
             } else {
+                //New Address Case: send address data to SP and submit Magento form.
+                debugger;
                 AddressBookAssist.onAddressCreated({"address": address})
                     .then(function (platformAddress) {
                         isLoaded = true;
@@ -113,6 +191,8 @@ require([
 
         return false;
     });
+
+
 
     let baseWidgetConfig = {
         apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",

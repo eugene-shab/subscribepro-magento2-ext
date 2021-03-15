@@ -41,7 +41,7 @@ class Address extends AbstractAddress
         }
     }
 
-    public function getCustomerDefaultBillingAddress(): array
+    public function getCustomerDefaultAddressByType($addressType = 'billing'): array
     {
         $addressId = $this->getRequest()->getParam('id');
         if (!$addressId) {
@@ -49,21 +49,24 @@ class Address extends AbstractAddress
         }
         try {
             $customer = $this->customerSession->getCustomer();
-            $defaultBillingAddress = $customer->getDefaultBillingAddress();
+
+            $defaultAddress = ($addressType === 'billing') ?
+                $customer->getDefaultBillingAddress() : $customer->getDefaultShippingAddress();
+
             $result =  [
-                'firstname' => $defaultBillingAddress->getFirstname(),
-                'lastname' => $defaultBillingAddress->getLastname(),
-                'company' => $defaultBillingAddress->getCompany(),
-                'street1' => (($defaultBillingAddress->getStreet()[0]) ?? ''),
-                'street2' => (($defaultBillingAddress->getStreet()[1]) ?? ''),
-                'city' => $defaultBillingAddress->getCity(),
-                'region' => $defaultBillingAddress->getRegion(),
-                'region_id' => $defaultBillingAddress->getRegionCode(),
-                'postcode' => $defaultBillingAddress->getPostcode(),
-                'country' => $defaultBillingAddress->getCountryId(),
-                'phone' => $defaultBillingAddress->getTelephone()
+                'firstName' => $defaultAddress->getFirstname(),
+                'lastName' => $defaultAddress->getLastname(),
+                'company' => $defaultAddress->getCompany(),
+                'street1' => (($defaultAddress->getStreet()[0]) ?? ''),
+                'street2' => (($defaultAddress->getStreet()[1]) ?? ''),
+                'city' => $defaultAddress->getCity(),
+                'region' => $defaultAddress->getRegion(),
+                'region_id' => $defaultAddress->getRegionCode(),
+                'postcode' => $defaultAddress->getPostcode(),
+                'country' => $defaultAddress->getCountryId(),
+                'phone' => $defaultAddress->getTelephone()
             ];
-            $platformAddressId = $defaultBillingAddress->getData(UpgradeData::PLATFORM_ADDRESS_ID_FIELD);
+            $platformAddressId = $defaultAddress->getData(UpgradeData::PLATFORM_ADDRESS_ID_FIELD);
             if ($platformAddressId) {
                 $result['id'] = (int) $platformAddressId;
             }
@@ -73,5 +76,10 @@ class Address extends AbstractAddress
             $this->_logger->critical($e->getMessage());
             return [];
         }
+    }
+
+    public function getAddressSaveSessionUrl(): string
+    {
+        return $this->getUrl('subscribepro/customer/addressSession');
     }
 }

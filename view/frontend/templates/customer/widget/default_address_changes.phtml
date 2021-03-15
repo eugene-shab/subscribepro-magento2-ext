@@ -1,0 +1,36 @@
+<?php
+/** @var $block Swarming\SubscribePro\Block\Customer\Widget\DefaultAddressChanged */
+/** @var $escaper \Magento\Framework\Escaper */
+?>
+<?php if ($block->isAddressBookEnabled()): ?>
+<?php
+    $changedDefaultAddressData = $block->getChangedAddressData();
+    $previousDefaultAddressData = ($changedDefaultAddressData['previous_default_address']) ?? [];
+    $newDefaultAddressData = ($changedDefaultAddressData['new_default_address']) ?? [];
+?>
+<?php if ($changedDefaultAddressData && $previousDefaultAddressData && $newDefaultAddressData): ?>
+<script>
+    let defaultBillingAddress = <?php echo json_encode($previousDefaultAddressData, JSON_FORCE_OBJECT); ?>,
+        newDefaultAddress = <?php echo json_encode($newDefaultAddressData, JSON_FORCE_OBJECT); ?>
+
+    require([
+        'jquery',
+    ], function($){
+
+        debugger;
+        setTimeout(function() {
+            AddressBookAssist.onDefaultBillingChanged({
+                "previousDefaultAddress": defaultBillingAddress,
+                "newDefaultAddress": newDefaultAddress
+            })
+                .then(function (platformAddress) {
+                    debugger;
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }, 1000);
+    });
+</script>
+<?php endif; ?>
+<?php endif; ?>

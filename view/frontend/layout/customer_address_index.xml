@@ -2,8 +2,9 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceContainer name="content">
-            <block class="Swarming\SubscribePro\Block\Customer\Widget\Delete" name="swarming.address.book.delete.widget"
-                   template="Swarming_SubscribePro::customer/widget/delete.phtml" after="address_grid"
+            <block class="Swarming\SubscribePro\Block\Customer\Widget\Index" name="swarming.address.book.index.widget"
+                   template="Swarming_SubscribePro::customer/widget/index.phtml" after="address_grid"
+                   cacheable="false"
                    ifconfig="swarming_subscribepro/advanced/enable_hosted_address_book_widget"/>
         </referenceContainer>
         <referenceBlock name="address_grid">
