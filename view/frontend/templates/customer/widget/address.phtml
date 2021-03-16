@@ -28,7 +28,7 @@ require([
             if(address1.hasOwnProperty(property) && property !== 'region'){
                 if(address1[property] !== address2[property]) {
                     console.log('Difference in', property)
-                    console.log(address1[property], address2[property])
+                    console.log(address1[property], '<->', address2[property])
                     return false;
                 }
             }
@@ -52,7 +52,8 @@ require([
             requestData.default_billing = 0;
             requestData.default_shipping = 1;
         } else {
-            console.error('Something going wrong with "Use as default billing / shipping address" !');
+            console.log('Any checkboxes are not checked by default.')
+            cb();
             return  false;
         }
 
@@ -168,13 +169,23 @@ require([
                 debugger;
                 AddressBookAssist.onAddressCreated({"address": address})
                     .then(function (platformAddress) {
-                        isLoaded = true;
-                        $('<input />').attr('type', 'hidden')
-                            .attr('name', 'platform_address_id')
-                            .attr('value', platformAddress.id)
-                            .appendTo('form#form-validate');
 
-                        formContainer.submit();
+                        delete  platformAddress.customerId; // remove extra keys before function
+                        delete  platformAddress.environmentId; // remove extra keys before function
+                        runOnDefaultAddressChanged(
+                            defaultBillingAddress,
+                            platformAddress,
+                            dataObj['default_billing'],
+                            dataObj['default_shipping'],
+                            function() {
+                                isLoaded = true;
+                                $('<input />').attr('type', 'hidden')
+                                    .attr('name', 'platform_address_id')
+                                    .attr('value', platformAddress.id)
+                                    .appendTo('form#form-validate');
+
+                                formContainer.submit();
+                            });
                     })
                     .catch((error) => {
                         console.error(error);

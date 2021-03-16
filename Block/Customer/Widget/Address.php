@@ -17,8 +17,8 @@ class Address extends AbstractAddress
         try {
             $address = $this->addressRepository->getById($addressId);
             $result =  [
-                'firstname' => $address->getFirstname(),
-                'lastname' => $address->getLastname(),
+                'firstName' => $address->getFirstname(),
+                'lastName' => $address->getLastname(),
                 'company' => $address->getCompany(),
                 'street1' => (($address->getStreet()[0]) ?? ''),
                 'street2' => (($address->getStreet()[1]) ?? ''),
