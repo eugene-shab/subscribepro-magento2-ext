@@ -3,17 +3,17 @@ declare(strict_types=1);
 
 namespace Swarming\SubscribePro\Controller\Customer;
 
+use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
-use Magento\Framework\Controller\Result\Json;
-use Magento\Framework\Controller\ResultFactory;
-use Magento\Framework\Phrase;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\Result\Json;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Data\Form\FormKey\Validator as FormKeyValidator;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\Framework\Controller\Result\RedirectFactory;
-use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\Phrase;
 use Psr\Log\LoggerInterface;
 
 class AddressSession implements HttpPostActionInterface, CsrfAwareActionInterface
@@ -47,6 +47,17 @@ class AddressSession implements HttpPostActionInterface, CsrfAwareActionInterfac
      */
     private $request;
 
+    /**
+     * AddressSession constructor.
+     *
+     * @param RequestInterface        $request
+     * @param FormKeyValidator        $formKeyValidator
+     * @param MessageManagerInterface $messageManager
+     * @param RedirectFactory         $redirectFactory
+     * @param CustomerSession         $customerSession
+     * @param ResultFactory           $resultFactory
+     * @param LoggerInterface         $logger
+     */
     public function __construct(
         RequestInterface $request,
         FormKeyValidator $formKeyValidator,
@@ -65,6 +76,9 @@ class AddressSession implements HttpPostActionInterface, CsrfAwareActionInterfac
         $this->customerSession = $customerSession;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function execute()
     {
         $defaultBilling = $this->request->getParam('default_billing');
@@ -94,6 +108,9 @@ class AddressSession implements HttpPostActionInterface, CsrfAwareActionInterfac
         return $resultJson;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
     {
         $resultRedirect = $this->resultRedirectFactory->create();
@@ -105,6 +122,9 @@ class AddressSession implements HttpPostActionInterface, CsrfAwareActionInterfac
         );
     }
 
+    /**
+     * @inheritdoc
+     */
     public function validateForCsrf(RequestInterface $request): ?bool
     {
         return $request->isPost() && $this->formKeyValidator->validate($request);
