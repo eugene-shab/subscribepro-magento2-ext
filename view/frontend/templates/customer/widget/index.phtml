@@ -51,7 +51,6 @@ require([
                         window.location = deleteUrlPrefix + $(e.target).data('address') +
                             '/form_key/' + $.mage.cookies.get('form_key');
                     }
-
                 } else if (shouldDelete === "not_found") {
                     console.log(shouldDelete);
                     isLoaded = true;

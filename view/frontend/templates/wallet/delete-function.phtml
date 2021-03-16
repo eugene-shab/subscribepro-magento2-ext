@@ -13,10 +13,14 @@ require([
     'jquery',
 ], function($){
     var cardTable = $('#my-orders-table'),
-        removeBtnList = cardTable.find('tr form button.action.delete');
+        removeBtnList = cardTable.find('tr form button.action.delete'),
+        allowOriginClick = false;
 
     if (removeBtnList.length) {
         removeBtnList.on('click', function (event) {
+            if (allowOriginClick) {
+                return true;
+            }
             event.preventDefault();
             event.stopImmediatePropagation();
 
@@ -25,12 +29,13 @@ require([
                 id: self.data('profile-id'),
             };
 
-            debugger;
             WalletAssist.onBeforePaymentProfileDeleted({"paymentProfile": paymentProfile}, function (paymentProfile, shouldDelete) {
-                debugger;
-                if (shouldDelete !== 'do_not_delete') {
+                if (shouldDelete === 'delete') {
                     self.closest('form').submit();
                     return true;
+                } else if (shouldDelete === "not_found") {
+                    allowOriginClick = true;
+                    self.click();
                 } else {
                     return false;
                 }
