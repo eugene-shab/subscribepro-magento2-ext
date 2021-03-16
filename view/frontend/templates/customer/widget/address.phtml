@@ -40,7 +40,7 @@ require([
     function runOnDefaultAddressChanged(previousDefaultAddress, newDefaultAddress, defaultBilling, defaultShipping, cb) {
         let requestData = {};
 
-        // Proceed with checklboxes.
+        // Proceed with checkboxes.
         if (defaultBilling === "1" && defaultShipping === '1') {
             // TODO: Need to refactor it.
             requestData.default_billing = 1;
@@ -61,7 +61,7 @@ require([
             'previous_default_address': previousDefaultAddress,
             'new_default_address': newDefaultAddress
         });
-        debugger;
+
         $.ajax({
             url: '<?php echo $escaper->escapeUrl($block->getAddressSaveSessionUrl()); ?>',
             data: requestData,
@@ -69,22 +69,19 @@ require([
             dataType: 'json',
             context: this,
             beforeSend: function () {
+                // TODO: enable/disable save button until proceed.
                 //elem.attr('disabled', 'disabled');
             },
             complete: function () {
+                // TODO: enable/disable save button until proceed.
                 // elem.attr('disabled', null);
-                debugger;
             }
         })
             .done(function (response) {
-                var msg;
-
-                debugger;
                 if (response.success) {
-                    debugger;
                     cb();
                 } else {
-                    debugger;
+                    console.error(response);
                 }
             })
             .fail(function (error) {
@@ -191,8 +188,6 @@ require([
 
         return false;
     });
-
-
 
     let baseWidgetConfig = {
         apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",

@@ -75,13 +75,11 @@ require([
             newDefaultAddress.id = parseInt(newDefaultAddress.id);
 
             if (changeBilling && changeShipping) {
-                debugger;
                 book = AddressBookAssist.onDefaultAddressChanged({
                     "previousDefaultAddress": defaultBillingAddress,
                         "newDefaultAddress": newDefaultAddress
                 });
             } else if (changeBilling || changeShipping) {
-                debugger;
                 if (changeBilling) {
                     book = AddressBookAssist.onDefaultBillingChanged({
                         "previousDefaultAddress": defaultBillingAddress,
@@ -96,27 +94,25 @@ require([
             }
 
             book.then(function (platformAddress) {
-                    debugger;
-                    $.ajax({
-                        url: '<?php echo $escaper->escapeUrl($block->getRemoveAddressFromSessionUrl()); ?>',
-                        type: 'get',
-                        dataType: 'json',
-                    })
-                        .done(function (response) {
-                            defaultBillingAddress = {};
-                            defaultShippingAddress = {};
-                            console.log('Data was unset from session.');
-                        })
-                        .fail(function (error) {
-                            console.error(JSON.stringify(error));
-                        });
+                $.ajax({
+                    url: '<?php echo $escaper->escapeUrl($block->getRemoveAddressFromSessionUrl()); ?>',
+                    type: 'get',
+                    dataType: 'json',
                 })
+                    .done(function (response) {
+                        defaultBillingAddress = {};
+                        defaultShippingAddress = {};
+                        console.log('Data was unset from session.');
+                    })
+                    .fail(function (error) {
+                        console.error(JSON.stringify(error));
+                    });
+            })
                 .catch((error) => {
                     console.error(error);
                 });
         }, 100);
     }
-
 
     let baseWidgetConfig = {
         apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",
