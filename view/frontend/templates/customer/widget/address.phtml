@@ -132,7 +132,7 @@ require([
 
                 //Is Equal Addresses.
                 let isEqualAddress = compareAddresses(currentAddress, address);
-                debugger;
+
                 if (isEqualAddress) {
                     runOnDefaultAddressChanged(defaultBillingAddress, currentAddress, dataObj['default_billing'], dataObj['default_shipping']
                         , function() {
@@ -166,7 +166,7 @@ require([
 
             } else {
                 //New Address Case: send address data to SP and submit Magento form.
-                debugger;
+
                 AddressBookAssist.onAddressCreated({"address": address})
                     .then(function (platformAddress) {
 

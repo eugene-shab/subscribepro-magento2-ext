@@ -17,15 +17,18 @@ require([
 
     if (removeBtnList.length) {
         removeBtnList.on('click', function (event) {
-            event.stopPropagation();
+            event.preventDefault();
+            event.stopImmediatePropagation();
 
             let self = $(this),
                 paymentProfile =  {
                 id: self.data('profile-id'),
             };
 
+            debugger;
             WalletAssist.onBeforePaymentProfileDeleted({"paymentProfile": paymentProfile}, function (paymentProfile, shouldDelete) {
-                if (shouldDelete) {
+                debugger;
+                if (shouldDelete !== 'do_not_delete') {
                     self.closest('form').submit();
                     return true;
                 } else {
