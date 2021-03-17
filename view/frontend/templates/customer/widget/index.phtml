@@ -15,8 +15,8 @@ $newDefaultAddressData = ($changedDefaultAddressData['new_default_address']) ?? 
 let widgetConfig = <?php echo $addressWidgetJson; ?>,
     defaultBillingAddress = <?php echo json_encode($previousDefaultAddressData, JSON_FORCE_OBJECT); ?>,
     newDefaultAddress = <?php echo json_encode($newDefaultAddressData, JSON_FORCE_OBJECT); ?>,
-    changeBilling = '<?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_billing']) ? 1 : 0; ?>',
-    changeShipping = '<?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_shipping']) ? 1 : 0; ?>';
+    changeBilling = <?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_billing']) ? 1 : 0; ?>,
+    changeShipping = <?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_shipping']) ? 1 : 0; ?>;
 
 require([
     'jquery',
@@ -78,6 +78,7 @@ require([
             defaultBillingAddress.id = parseInt(defaultBillingAddress.id);
             newDefaultAddress.id = parseInt(newDefaultAddress.id);
 
+            debugger;
             if (changeBilling && changeShipping) {
                 book = AddressBookAssist.onDefaultAddressChanged({
                     "previousDefaultAddress": defaultBillingAddress,
