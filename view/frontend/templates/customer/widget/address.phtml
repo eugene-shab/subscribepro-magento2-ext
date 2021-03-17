@@ -18,7 +18,7 @@ let widgetConfig = <?php echo $addressWidgetJson; ?>,
     defaultShippingAddress = <?php echo json_encode($defaultShippingAddress, JSON_FORCE_OBJECT); ?>;
 
 require([
-    'jquery',
+    'jquery'
 ], function($){
     let formContainer = $('form#form-validate'),
         isLoaded = false;
