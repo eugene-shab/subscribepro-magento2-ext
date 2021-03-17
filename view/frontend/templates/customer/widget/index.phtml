@@ -1,5 +1,5 @@
 <?php
-/** @var $block Swarming\SubscribePro\Block\Customer\Widget\Delete */
+/** @var $block Swarming\SubscribePro\Block\Customer\Widget\Index */
 /** @var $escaper \Magento\Framework\Escaper */
 ?>
 <?php if ($block->isAddressBookEnabled()): ?>
@@ -15,46 +15,53 @@ $newDefaultAddressData = ($changedDefaultAddressData['new_default_address']) ?? 
 let widgetConfig = <?php echo $addressWidgetJson; ?>,
     defaultBillingAddress = <?php echo json_encode($previousDefaultAddressData, JSON_FORCE_OBJECT); ?>,
     newDefaultAddress = <?php echo json_encode($newDefaultAddressData, JSON_FORCE_OBJECT); ?>,
-    changeBilling = <?php echo ($changedDefaultAddressData['default_billing']) ? 1 : 0; ?>,
-    changeShipping = <?php echo ($changedDefaultAddressData['default_shipping']) ? 1 : 0; ?>;
+    changeBilling = '<?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_billing']) ? 1 : 0; ?>',
+    changeShipping = '<?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_shipping']) ? 1 : 0; ?>';
 
 require([
     'jquery',
-], function($){
+    'Magento_Ui/js/modal/confirm'
+], function($, confirm){
     let tableContainer = $('#additional-addresses-table'),
         removeBtnList = tableContainer.find('tr a.action.delete'),
-        deleteUrlPrefix = "<?php echo $escaper->escapeJs($escaper->escapeUrl($block->getDeleteUrl())) ?>id/",
-        isLoaded = false;
+        deleteUrlPrefix = "<?php echo $escaper->escapeJs($escaper->escapeUrl($block->getDeleteUrl())) ?>id/";
 
     if (removeBtnList.length) {
-        removeBtnList.on('click', function (e) {
+        removeBtnList.on('click', function (event) {
+            debugger;
+
             let self = $(this),
                 platformAddress =  {
                     id: parseInt(self.data('platform-address-id')),
                 };
 
-            if (isLoaded) {
-                return true;
-            }
+            event.stopPropagation();
+            event.preventDefault();
 
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-            e.preventDefault();
+            function setWindowLocation(e) {
+                // @see mage.address._deleteAddress
+                if (typeof $(e.target).parent().data('address') !== 'undefined') {
+                    window.location = deleteUrlPrefix + $(e.target).parent().data('address') +
+                        '/form_key/' + $.mage.cookies.get('form_key');
+                } else {
+                    window.location = deleteUrlPrefix + $(e.target).data('address') +
+                        '/form_key/' + $.mage.cookies.get('form_key');
+                }
+            }
 
             AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (address, shouldDelete) {
                 if (shouldDelete === "delete") {
-                    // // @see mage.address._deleteAddress
-                    if (typeof $(e.target).parent().data('address') !== 'undefined') {
-                        window.location = deleteUrlPrefix + $(e.target).parent().data('address') +
-                            '/form_key/' + $.mage.cookies.get('form_key');
-                    } else {
-                        window.location = deleteUrlPrefix + $(e.target).data('address') +
-                            '/form_key/' + $.mage.cookies.get('form_key');
-                    }
+                    setWindowLocation(event);
                 } else if (shouldDelete === "not_found") {
-                    console.log(shouldDelete);
-                    isLoaded = true;
-                    self.click();
+                    confirm({
+                        content: $.mage.__('Are you sure you want to delete this address?'),
+                        actions: {
+                            /** @inheritdoc */
+                            confirm: function () {
+                                setWindowLocation(event);
+                            }
+                        }
+                    });
                 } else {
                     console.log(shouldDelete);
                 }
