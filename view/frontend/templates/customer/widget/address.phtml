@@ -21,6 +21,7 @@ require([
     'jquery'
 ], function($){
     let formContainer = $('form#form-validate'),
+        buttonSave = formContainer.find('.actions-toolbar .action.save')
         isLoaded = false;
 
     function compareAddresses(address1, address2) {
@@ -94,6 +95,7 @@ require([
         if (isLoaded) {
             return true;
         }
+        buttonSave.prop('disabled', true);
         e.stopImmediatePropagation();
         // TODO: maybe need to disable "Save Address" button during AddressBookAssist call.
         if (formContainer.validation() && formContainer.validation('isValid')) {
@@ -157,7 +159,6 @@ require([
                                     .attr('name', 'platform_address_id')
                                     .attr('value', currentAddress.id)
                                     .appendTo('form#form-validate');
-                                debugger;
                                 isLoaded = true;
                                 formContainer.submit();
                             });
@@ -188,12 +189,14 @@ require([
                             });
                     })
                     .catch((error) => {
+                        buttonSave.prop('disabled', false);
                         console.error(error);
                     });
             }
 
             return false;
         } else {
+            buttonSave.prop('disabled', false);
             console.log('Form not Valid');
         }
 
