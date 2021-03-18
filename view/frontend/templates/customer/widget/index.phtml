@@ -1,0 +1,134 @@
+<?php
+/** @var $block Swarming\SubscribePro\Block\Customer\Widget\Index */
+/** @var $escaper \Magento\Framework\Escaper */
+?>
+<?php if ($block->isAddressBookEnabled()): ?>
+<?php
+$addressWidgetUrl = $block->getAddressWidgetUrl();
+$addressWidgetJson = $block->getAddressWidgetJson();
+$changedDefaultAddressData = $block->getChangedAddressData();
+$previousDefaultAddressData = ($changedDefaultAddressData['previous_default_address']) ?? [];
+$newDefaultAddressData = ($changedDefaultAddressData['new_default_address']) ?? [];
+?>
+<script src="<?php echo $escaper->escapeUrl($addressWidgetUrl); ?>"></script>
+<script>
+let widgetConfig = <?php echo $addressWidgetJson; ?>,
+    defaultBillingAddress = <?php echo json_encode($previousDefaultAddressData, JSON_FORCE_OBJECT); ?>,
+    newDefaultAddress = <?php echo json_encode($newDefaultAddressData, JSON_FORCE_OBJECT); ?>,
+    changeBilling = <?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_billing']) ? 1 : 0; ?>,
+    changeShipping = <?php echo ($changedDefaultAddressData && $changedDefaultAddressData['default_shipping']) ? 1 : 0; ?>;
+
+require([
+    'jquery',
+    'Magento_Ui/js/modal/confirm'
+], function($, confirm){
+    let tableContainer = $('#additional-addresses-table'),
+        removeBtnList = tableContainer.find('tr a.action.delete'),
+        deleteUrlPrefix = "<?php echo $escaper->escapeJs($escaper->escapeUrl($block->getDeleteUrl())) ?>id/";
+
+    if (removeBtnList.length) {
+        removeBtnList.on('click', function (event) {
+            let self = $(this),
+                platformAddress =  {
+                    id: parseInt(self.data('platform-address-id')),
+                };
+
+            event.stopPropagation();
+            event.preventDefault();
+
+            function setWindowLocation(e) {
+                // @see mage.address._deleteAddress
+                if (typeof $(e.target).parent().data('address') !== 'undefined') {
+                    window.location = deleteUrlPrefix + $(e.target).parent().data('address') +
+                        '/form_key/' + $.mage.cookies.get('form_key');
+                } else {
+                    window.location = deleteUrlPrefix + $(e.target).data('address') +
+                        '/form_key/' + $.mage.cookies.get('form_key');
+                }
+            }
+
+            AddressBookAssist.onBeforeAddressDeleted({"address": platformAddress}, function (address, shouldDelete) {
+                if (shouldDelete === "delete") {
+                    setWindowLocation(event);
+                } else if (shouldDelete === "not_found") {
+                    confirm({
+                        content: $.mage.__('Are you sure you want to delete this address?'),
+                        actions: {
+                            /** @inheritdoc */
+                            confirm: function () {
+                                setWindowLocation(event);
+                            }
+                        }
+                    });
+                } else {
+                    console.log(shouldDelete);
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+
+            return false;
+        });
+    }
+
+    if (defaultBillingAddress.hasOwnProperty('id') && newDefaultAddress.hasOwnProperty('id')) {
+        setTimeout(function () {
+            let book;
+
+            defaultBillingAddress.id = parseInt(defaultBillingAddress.id);
+            newDefaultAddress.id = parseInt(newDefaultAddress.id);
+
+            debugger;
+            if (changeBilling && changeShipping) {
+                book = AddressBookAssist.onDefaultAddressChanged({
+                    "previousDefaultAddress": defaultBillingAddress,
+                        "newDefaultAddress": newDefaultAddress
+                });
+            } else if (changeBilling || changeShipping) {
+                if (changeBilling) {
+                    book = AddressBookAssist.onDefaultBillingChanged({
+                        "previousDefaultAddress": defaultBillingAddress,
+                        "newDefaultAddress": newDefaultAddress
+                    });
+                } else {
+                    book = AddressBookAssist.onDefaultShippingChanged({
+                        "previousDefaultAddress": defaultBillingAddress,
+                        "newDefaultAddress": newDefaultAddress
+                    });
+                }
+            }
+
+            book.then(function (platformAddress) {
+                $.ajax({
+                    url: '<?php echo $escaper->escapeUrl($block->getRemoveAddressFromSessionUrl()); ?>',
+                    type: 'get',
+                    dataType: 'json',
+                })
+                    .done(function (response) {
+                        defaultBillingAddress = {};
+                        defaultShippingAddress = {};
+                        console.log('Data was unset from session.');
+                    })
+                    .fail(function (error) {
+                        console.error(JSON.stringify(error));
+                    });
+            })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }, 100);
+    }
+
+    let baseWidgetConfig = {
+        apiAccessToken: "<?php echo $block->getWidgetAccessTokenForCurrentCustomer(); ?>",
+        customerId: <?php echo $block->getPlatformCustomerId(); ?>
+    };
+
+    for (let key in baseWidgetConfig) {
+        widgetConfig[key] = baseWidgetConfig[key];
+    }
+    AddressBookAssist.init(widgetConfig);
+});
+</script>
+<div id="sp-address-book"></div>
+<?php endif; ?>

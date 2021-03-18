@@ -42,19 +42,7 @@ $ccNumberView = $block->escapeHtml($block->getNumberLast4Digits());
                 value="<?php echo $block->getToken()->getPublicHash()?>"
                 type="hidden"/>
 
-            <button type="submit"
-                    class="action delete"
-                    data-mage-init='{
-                                    "Magento_Vault/js/customer_account/deleteWidget":{
-                                        "type": "popup",
-                                        "modalClass": "my-credit-cards-popup",
-                                        "toggleEvent": "click",
-                                        "title": "<?php echo $block->escapeHtml(__('Delete')) ?>",
-                                        "content": "Are you sure you want to delete this card: <?php
-                    echo $ccNumberView
-                    ?>?"
-                                    }
-                                }'>
+            <button class="action delete" data-profile-id="<?php echo $block->getPaymentProfileId(); ?>">
                 <span><?php echo $block->escapeHtml(__('Delete')) ?></span>
             </button>
         </form>
